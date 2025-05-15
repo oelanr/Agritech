@@ -1,0 +1,49 @@
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichiers temporaires
+*.log
+*.tmp
+*.swp
+*.swo
+*~
+
+# Dossiers de dépendances
+node_modules/
+.venv/
+env/
+__pycache__/
+dist/
+build/
+*.egg-info/
+
+# Fichiers de configuration d’IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Fichiers de compilation
+*.o
+*.pyc
+*.class
+*.out
+
+# Sauvegardes
+*.bak
+
+# Fichiers de test/coverage
+coverage/
+*.cover
+*.lcov
+
+# Fichiers personnels
+*.secret
+*.env
+.env.*
+
+# Dossiers cachés (hors .git)
+.*
+!.gitignore
+!.gitkeep
+
