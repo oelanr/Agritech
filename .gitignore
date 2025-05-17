@@ -47,3 +47,5 @@ coverage/
 !.gitignore
 !.gitkeep
 
+#Données
+data/
