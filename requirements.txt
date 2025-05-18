@@ -12,6 +12,7 @@ tensorflow
 opencv-python
 ipykernel
 seaborn
+mlflow
 
 python-dotenv
 langchain
