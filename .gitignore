@@ -50,3 +50,25 @@ coverage/
 
 #Données
 /data/
+/data
+/detection/
+/detection/
+
+*.jpg
+*.png
+*.jpeg
+*.csv
+*.zip
+*.pt
+*.pkl
+*.npy
+*.joblib
+
+# Ignore les environnements
+.venv/
+__pycache__/
+
+# Ignore les datasets bruts
+ml/detection/data/raw/
+
+.jpg
