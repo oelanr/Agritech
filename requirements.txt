@@ -17,11 +17,14 @@ mlflow
 python-dotenv
 langchain
 langchain-community
+langchain-groq
 langchain-google-genai
 langchain-google-community
 langgraph
 streamlit
 beautifulsoup4
+
+
 faiss-cpu
 pypdf
 
