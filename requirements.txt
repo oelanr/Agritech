@@ -3,6 +3,10 @@ djangorestframework
 djangorestframework-simplejwt
 django-cors-headers
 pillow
+fastapi
+uvicorn[standard]
+pydantic
+pytest # Ajouté pour les tests# Ce fichier peut rester vide. Il indique à Python que ce dossier est un package.
 
 numpy
 pandas
@@ -23,6 +27,7 @@ langchain-google-community
 langgraph
 streamlit
 beautifulsoup4
+unstructured
 
 
 faiss-cpu
