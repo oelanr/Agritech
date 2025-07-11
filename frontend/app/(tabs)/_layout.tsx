@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -13,33 +14,103 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+  
+      screenOptions={({ route }) => ({
+        tabBarStyle: {
+          backgroundColor: '#546346',
+          borderRadius: 50,
+          marginHorizontal: 16,
+          marginBottom: 70,
+          position: 'absolute',
+          height: 62,
+          paddingBottom: 0,
+          paddingTop: 0,
+          justifyContent: 'center',
+        },
+    
+        tabBarLabelStyle: {
+          fontSize: 13,
+          lineHeight: 44,
+          fontWeight: '500',
+          textAlign: 'center',
+        },
+    
+        tabBarItemStyle: {
+          paddingHorizontal: 4,
+          paddingVertical: 6,
+          marginBottom: 0,
+          borderRadius: 0,
+        },
+    
+        tabBarActiveTintColor: '#546346',
+        tabBarInactiveTintColor: 'white',
+        tabBarActiveBackgroundColor: 'white',
+    
+        tabBarIconStyle: {
+          display: 'none',
+        },
+        tabBarIcon: () => null,
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
+    
+        
+        tabBarButton: (props) => {
+          const { accessibilityState, children, style, ...rest } = props;
+          const focused = accessibilityState?.selected;
+    
+          return (
+            <TouchableOpacity
+              {...rest}
+              style={[
+                style,
+                {
+                  borderWidth: focused ? 2 : 0,
+                  borderColor: focused ? 'white' : 'transparent',
+                  borderRadius: 25,
+                 
+                  
+                },
+              ]}
+            >
+              {children}
+            </TouchableOpacity>
+          );
+        },
+      })}
+      >
       <Tabs.Screen
         name="(home)"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'Home',         
+           tabBarIcon: () => null,
         }}
+      />
+      
+      <Tabs.Screen
+        name="(scan)"
+        options={{
+          title: 'Scan',
+          tabBarIcon: () => null,
+        
+        }}
+      />
+      <Tabs.Screen 
+        name="(soin)"
+        options={{
+          title: 'Soin',
+          tabBarIcon: () => null,
+        }}
+        
       />
       <Tabs.Screen
-        name="explore"
+        name="(z_ai)"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'AI',
+          tabBarIcon: () => null,
+
+
         }}
       />
+      
     </Tabs>
   );
 }

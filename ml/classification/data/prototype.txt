@@ -1,0 +1,11 @@
+data = [
+    {"taches": True,  "feuille_jaune": True,  "humidite": "élevée", "maladie": "mildiou"},
+    {"taches": False, "feuille_jaune": True,  "humidite": "basse",  "maladie": "carence"},
+    {"taches": True,  "feuille_jaune": False, "humidite": "élevée", "maladie": "rouille"},
+    {"taches": True,  "feuille_jaune": True,  "humidite": "basse",  "maladie": "rouille"},
+    {"taches": False, "feuille_jaune": False, "humidite": "élevée", "maladie": "sain"},
+    {"taches": False, "feuille_jaune": False, "humidite": "basse",  "maladie": "sain"},
+    {"taches": True,  "feuille_jaune": False, "humidite": "basse",  "maladie": "carence"},
+    {"taches": False, "feuille_jaune": True,  "humidite": "élevée", "maladie": "mildiou"},
+]
+
