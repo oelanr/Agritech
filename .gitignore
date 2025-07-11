@@ -63,7 +63,8 @@ coverage/
 *.pkl
 *.npy
 *.joblib
-
+*.pdf 
+*.sqlite3
 # Ignore les environnements
 .venv/
 __pycache__/
@@ -72,3 +73,5 @@ __pycache__/
 ml/detection/data/raw/
 
 .jpg
+
+models
