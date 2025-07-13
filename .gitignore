@@ -70,5 +70,6 @@ __pycache__/
 
 # Ignore les datasets bruts
 ml/detection/data/raw/
-
+/models
+*.sqlite3
 .jpg
