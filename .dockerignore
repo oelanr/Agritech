@@ -1,0 +1,14 @@
+ccc
+# Ignorer l'historique Git
+.git/
+
+# Ignorer les fichiers de cache Python
+__pycache__/
+*.pyc
+
+# Ignorer les fichiers de rapport et de test
+rapport_agrichat.*
+*.json
+
+# Exclure la base de données ChromaDB pré-existante du contexte
+ml/agrichat/data/chroma_langchain_db/

@@ -1,75 +1,122 @@
-# Fichiers système
+######################
+# 1. Systèmes & OS   #
+######################
 .DS_Store
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+.AppleDouble
+.LSOverride
+*.pid
 
-# Fichiers temporaires
+###########################
+# 2. Environnements Python #
+###########################
+.venv/
+env/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.mypy_cache/
+.pytest_cache/
+pip-wheel-metadata/
+*.manifest
+
+#####################
+# 3. IDE & éditeurs #
+#####################
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+######################
+# 4. Fichiers secrets #
+######################
+.env
+.env.*
+*.secret
+*.sqlite3
+tokenizer_config.json
+config.json
+
+######################################
+# 5. Dossiers de build & packaging   #
+######################################
+build/
+dist/
+*.egg-info/
+*.whl
+
+##################
+# 6. Docker      #
+##################
+*.tar
+docker-compose.override.yml
+docker-compose.dev.yml
+
+##################
+# 7. Logs & Temp #
+##################
+logs/
 *.log
 *.tmp
 *.swp
 *.swo
 *~
-
-# Dossiers de dépendances
-node_modules/
-.venv/
-env/
-__pycache__/
-dist/
-build/
-*.egg-info/
-venv
-
-# Fichiers de configuration d’IDE
-.vscode/
-.idea/
-*.code-workspace
-
-# Fichiers de compilation
-*.o
-*.pyc
-*.class
-*.out
-
-# Sauvegardes
 *.bak
+*.reload
 
-# Fichiers de test/coverage
+##############################
+# 8. Notebooks & Jupyter     #
+##############################
+.ipynb_checkpoints/
+*.ipynb~
+
+#########################
+# 9. Tests & coverage   #
+#########################
+htmlcov/
 coverage/
 *.cover
 *.lcov
+test-results/
 
-# Fichiers personnels
-*.secret
-*.env
-.env.*
+##########################
+# 10. Données & modèles  #
+##########################
+# Datasets bruts
+/data/
+ml/detection/data/raw/
+detection/
+models/
 
-# Dossiers cachés (hors .git)
+# Fichiers lourds
+*.csv
+*.zip
+*.jpg
+*.jpeg
+*.png
+*.npy
+*.pt
+*.pkl
+*.joblib
+*.faiss
+*.db
+
+# Cache HF / LangChain
+huggingface/
+~/.cache/huggingface
+~/.huggingface
+chroma/
+
+###############################
+# 11. Fichiers/dossiers cachés #
+###############################
 .*
 !.gitignore
 !.gitkeep
-
-#Données
-/data/
-/data
-/detection/
-/detection/
-
-*.jpg
-*.png
-*.jpeg
-*.csv
-*.zip
-*.pt
-*.pkl
-*.npy
-*.joblib
-
-# Ignore les environnements
-.venv/
-__pycache__/
-
-# Ignore les datasets bruts
-ml/detection/data/raw/
-/models
-*.sqlite3
-.jpg
+!.dockerignore
+!.env.example

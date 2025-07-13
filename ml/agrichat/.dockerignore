@@ -1,0 +1,22 @@
+# Ignorer les fichiers et dossiers inutiles lors du build Docker
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv
+.env
+.git
+.gitignore
+notebooks/
+*.ipynb
+frontend/
+backend/
+__pycache__/
+*.json
+rapport_agrichat.*
+.pytest_cache
+# Ignorer les environnements virtuels et dépendances
+.venv/
+frontend/node_modules/
+backend/
