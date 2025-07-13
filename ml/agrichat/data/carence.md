@@ -20,7 +20,7 @@ Les symptômes varient selon l'élément manquant et sa mobilité dans la plante
 ## 3. Exemples de Carences Courantes
 
 ### Carence en Azote (N)
-- **Symptôme principal** : **Jaunissement uniforme (chlorose)** du feuillage, qui commence par les feuilles les plus âgées. La plante entière prend une teinte vert pâle.
+- **SYMPTÔME CLÉ** : Un **jaunissement uniforme (chlorose)** du feuillage qui commence par les **feuilles les plus âgées** est le signe le plus courant d'une carence en Azote. La plante entière prend une teinte vert pâle.
 - **Effet** : Croissance ralentie, tiges grêles, production faible.
 
 ### Carence en Phosphore (P)
@@ -28,7 +28,7 @@ Les symptômes varient selon l'élément manquant et sa mobilité dans la plante
 - **Effet** : Croissance très lente, développement racinaire médiocre.
 
 ### Carence en Potassium (K)
-- **Symptôme principal** : Le **bord et l'extrémité des feuilles les plus anciennes jaunissent puis brunissent**, comme s'ils étaient brûlés ou desséchés.
+- **SYMPTÔME CLÉ** : Si le **bord et l'extrémité des feuilles les plus anciennes jaunissent puis brunissent**, comme s'ils étaient **brûlés ou desséchés**, il s'agit très probablement d'une carence en Potassium.
 - **Effet** : Fragilité de la plante, fruits et fleurs de mauvaise qualité.
 
 ### Carence en Fer (Fe)

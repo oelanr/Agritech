@@ -1,7 +1,7 @@
 # app.py
 from fastapi import FastAPI, HTTPException
-from agrichat.schema import ChatRequest, ChatResponse
-from agrichat.rag_pipeline import build_rag_graph
+from .schema import ChatRequest, ChatResponse
+from .rag_pipeline import build_rag_graph
 from langchain_core.messages import HumanMessage
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -15,6 +15,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/")
+def root():
+    return {"message": "Agrichat started successfuly"}
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest):

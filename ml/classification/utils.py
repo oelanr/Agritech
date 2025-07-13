@@ -2,24 +2,10 @@ import pandas as pd
 import joblib
 import math
 from collections import Counter
+from arbre import NoeudArbre
+import os
 
-class NoeudArbre:
-    """Représente un noeud de l'arbre de décision."""
-    def __init__(self, feature=None, classe=None):
-        self.feature = feature
-        self.classe = classe
-        self.enfants = {}
-        
-    def est_feuille(self):
-        return self.classe is not None
-    
-    def predire(self, exemple):
-        if self.est_feuille():
-            return self.classe
-        valeur = exemple.get(self.feature)
-        if valeur in self.enfants:
-            return self.enfants[valeur].predire(exemple)
-        return None
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def entropie(exemples):
     total = len(exemples)
@@ -100,9 +86,13 @@ def construire_arbre_id3(data, features):
     
     return racine
 
-# Chemin vers les fichiers
-DATA_PATH = 'ml/classification/data/data.csv'
-MODEL_PATH = 'ml/classification/models/modele_arbre2.joblib'
+# # Chemin vers les fichiers
+# DATA_PATH = 'ml/classification/data/data.csv'
+# MODEL_PATH = 'ml/classification/models/modele_arbre2.joblib'
+
+
+MODEL_PATH = os.path.join(BASE_DIR, 'models', 'modele_arbre2.joblib')
+DATA_PATH = os.path.join(BASE_DIR, 'data', 'data.csv')  
 
 def train_model():
     """
