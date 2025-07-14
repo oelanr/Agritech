@@ -120,3 +120,7 @@ chroma/
 !.gitkeep
 !.dockerignore
 !.env.example
+models/models--sentence-transformers--all-mpnet-base-v2/
+ml/agrichat/data/chroma_langchain_db/
+ml/notebooks/exploratory_data_analysis.ipynb
+ml/notebooks/normalisation.ipynb
