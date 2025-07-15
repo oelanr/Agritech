@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React,{useState} from 'react';
 import {
   View,
   Text,
@@ -8,15 +8,68 @@ import {
   Image,
   StyleSheet,
   ScrollView,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from "expo-router";
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../../services/api';
+import { AuthResponse, AuthErrorResponse } from '../../services/types';
+import { AxiosResponse, AxiosError } from 'axios';
 
 const googleLogo = { uri: 'https://cdn-icons-png.flaticon.com/512/281/281764.png' };
 const facebookLogo = { uri: 'https://cdn-icons-png.flaticon.com/512/5968/5968764.png' };
 const arrowIcon = { uri: 'https://cdn-icons-png.flaticon.com/512/271/271228.png' };
 
 const SignUpScreen: React.FC = () => {
+  const [username, setUsername] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+    const [confirmPassword, setConfirmPassword] = useState<string>('');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    const handleSignUp = async () => {
+        // Validation des données côté client
+        if (!username || !password || !confirmPassword) {
+            Alert.alert('Erreur', 'Veuillez remplir tous les champs.');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            Alert.alert('Erreur', 'Les mots de passe ne correspondent pas.');
+            return;
+        }
+
+        setIsLoading(true); // Activez l'indicateur de chargement
+
+        try {
+            // Appel de l'API d'inscription
+            const response: AxiosResponse<AuthResponse> = await api.post<AuthResponse>('/register/', { username, password });
+            
+            const { token } = response.data;
+            
+            // Le token est renvoyé par le backend, il peut être stocké
+            await AsyncStorage.setItem('authToken', token);
+
+            Alert.alert('Succès', 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
+            
+            // Redirection vers la page de connexion après l'inscription réussie
+            router.push("/auth/login"); // Assurez-vous que la route '/login' est correcte
+
+        } catch (error) {
+            const axiosError = error as AxiosError<AuthErrorResponse>;
+            if (axiosError.response) {
+                const errorMessage = axiosError.response.data.error || 'Erreur d\'inscription inconnue.';
+                Alert.alert('Erreur d\'inscription', errorMessage);
+            } else {
+                Alert.alert('Erreur réseau', 'Impossible de se connecter au serveur. Vérifiez votre connexion.');
+            }
+        } finally {
+            setIsLoading(false); // Désactivez l'indicateur de chargement
+        }
+    };
+
     return (
         <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -36,25 +89,39 @@ const SignUpScreen: React.FC = () => {
             style={styles.input}
             placeholder="Username"
             placeholderTextColor="#999"
+            onChangeText={setUsername}
+            value={username}
             />
           <TextInput
             style={styles.input}
             placeholder="Password"
             placeholderTextColor="#999"
             secureTextEntry={true}
+            onChangeText={setPassword}
+            value={password}
             />
           <TextInput
             style={styles.input}
             placeholder="Confirm password"
             placeholderTextColor="#999"
             secureTextEntry={true}
+            onChangeText={setConfirmPassword}
+            value={confirmPassword}
             />
 
-          <TouchableOpacity style={styles.signInButton}>
-            <Text style={styles.signInButtonText}>Sign up</Text>
-          </TouchableOpacity>
+          <TouchableOpacity 
+                        style={[styles.signInButton, isLoading && styles.signInButtonDisabled]}
+                        onPress={handleSignUp}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? (
+                            <ActivityIndicator color="#fff" />
+                        ) : (
+                            <Text style={styles.signInButtonText}>Sign up</Text>
+                        )}
+                    </TouchableOpacity>
           
-          <Text style={styles.alreadyAccountText}>Already account ?</Text>
+          <Text style={styles.alreadyAccountText} onPress={() => router.push("/auth/login")}>Already account ?</Text>
 
           <TouchableOpacity style={styles.socialButton}>
             <Image source={googleLogo} style={styles.socialIcon} />
@@ -173,5 +240,7 @@ const styles = StyleSheet.create({
         width: 20,
         height: 20,
         resizeMode: 'contain',
+    },signInButtonDisabled: {
+        opacity: 0.5,
     },
 });

@@ -1,4 +1,5 @@
-import React from 'react';
+import React,{useState} from 'react';
+
 import {
   View,
   Text,
@@ -6,6 +7,8 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  Alert,
+  ActivityIndicator,
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,7 +18,50 @@ const googleLogo = { uri: 'https://cdn-icons-png.flaticon.com/512/281/281764.png
 const facebookLogo = { uri: 'https://cdn-icons-png.flaticon.com/512/5968/5968764.png' };
 const arrowIcon = { uri: 'https://cdn-icons-png.flaticon.com/512/271/271228.png' };
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../../services/api';
+import { AuthResponse, AuthErrorResponse } from '../../services/types';
+import { AxiosResponse, AxiosError } from 'axios';
+
 const SignInScreen: React.FC = () => {
+
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const handleLogin = async () => {
+    // Validation des champs côté client
+    if (!username || !password) {
+      Alert.alert('Erreur', 'Veuillez saisir votre nom d\'utilisateur et votre mot de passe.');
+      return;
+    }
+
+    setIsLoading(true); // Activez l'indicateur de chargement
+
+    try {
+      const response: AxiosResponse<AuthResponse> = await api.post<AuthResponse>('/login/', { username, password });
+      
+      const { token } = response.data;
+      
+      await AsyncStorage.setItem('authToken', token);
+
+      Alert.alert('Succès', 'Connexion réussie !');
+      
+      router.replace("/(tabs)/(home)"); 
+
+    } catch (error) {
+      const axiosError = error as AxiosError<AuthErrorResponse>;
+      if (axiosError.response) {
+        const errorMessage = axiosError.response.data.error || 'Erreur de connexion inconnue.';
+        Alert.alert('Erreur de connexion', errorMessage);
+      } else {
+        Alert.alert('Erreur réseau', 'Impossible de se connecter au serveur. Vérifiez votre connexion.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -38,22 +84,33 @@ const SignInScreen: React.FC = () => {
             style={styles.input}
             placeholder="Username"
             placeholderTextColor="#999"
+            onChangeText={setUsername} 
+            value={username}
           />
           <TextInput
             style={styles.input}
             placeholder="Password"
             placeholderTextColor="#999"
             secureTextEntry={true}
+            onChangeText={setPassword}
+            value={password}
           />
 
           <TouchableOpacity style={styles.forgotPasswordButton}>
             <Text style={styles.forgotPasswordText}>Forgot password ?</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.signInButton}>
-            <Text style={styles.signInButtonText}>Sign in</Text>
-          </TouchableOpacity>
-
+          <TouchableOpacity 
+                        style={[styles.signInButton, isLoading && styles.signInButtonDisabled]}
+                        onPress={handleLogin}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? (
+                            <ActivityIndicator color="#fff" />
+                        ) : (
+                            <Text style={styles.signInButtonText}>Sign in</Text>
+                        )}
+                    </TouchableOpacity>
           <TouchableOpacity style={styles.socialButton}>
             <Image source={googleLogo} style={styles.socialIcon} />
             <Text style={styles.socialButtonText}>Continuer avec google</Text>
@@ -177,4 +234,7 @@ const styles = StyleSheet.create({
     height: 20,
     resizeMode: 'contain',
   },
+   signInButtonDisabled: {
+        opacity: 0.5,
+    },
 });
