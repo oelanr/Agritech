@@ -13,7 +13,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, '..', 'models', 'modele_arbre2.joblib')
 
 app = FastAPI(
-    title="API de Prédiction Agrichat",
+    title="API de Prédiction",
     description="Prédit la maladie à partir des symptômes saisis",
     version="1.0"
 )
