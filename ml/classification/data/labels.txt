@@ -1,0 +1,16 @@
+features_config = {                                                          
+    "taches": [True, False],                                                
+    "feuille_jaune": [True, False],                                         
+    "taches_circulaires": [True, False],                                    
+    "bord_feuille_brun": [True, False],                                     
+    "fletrissure": [True, False],                                          
+    "presence_champignons": [True, False],                                  
+    "humidite": ["basse", "moyenne", "élevée"],                             
+    "luminosite": ["faible", "moyenne", "forte"],                           
+    "vent": ["faible", "modéré", "fort"],                                   
+    "pluie_recente": [True, False],                                         
+    "stade_croissance": ["jeune", "mature", "floraison"],                   
+    "fertilisation_recente": [True, False],                                 
+    "type_sol": ["argileux", "sableux", "limoneux"],                        
+    "irrigation": ["manuelle", "automatique", "aucune"]                        
+}                                          
