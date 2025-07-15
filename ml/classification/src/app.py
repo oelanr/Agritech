@@ -49,6 +49,7 @@ def load_model():
     except FileNotFoundError:
         raise RuntimeError(f"Modèle non trouvé à {MODEL_PATH}. Entraîne-le avec train.py")
 
+# Endpoint de prédiction
 @app.post("/predict")
 def predict_sante(input_data: SymptomesInput):
     global arbre
