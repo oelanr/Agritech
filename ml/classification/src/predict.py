@@ -3,7 +3,7 @@ import os
 
 # Chemin vers le modèle sauvegardé
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, 'models', 'modele_arbre2.joblib')
+MODEL_PATH = os.path.join(BASE_DIR, '..', 'models', 'modele_arbre2.joblib')
 
 try:
     arbre = joblib.load(MODEL_PATH)

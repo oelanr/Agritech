@@ -91,8 +91,8 @@ def construire_arbre_id3(data, features):
 # MODEL_PATH = 'ml/classification/models/modele_arbre2.joblib'
 
 
-MODEL_PATH = os.path.join(BASE_DIR, 'models', 'modele_arbre2.joblib')
-DATA_PATH = os.path.join(BASE_DIR, 'data', 'data.csv')  
+MODEL_PATH = os.path.join(BASE_DIR, '..', 'models', 'modele_arbre2.joblib')
+DATA_PATH = os.path.join(BASE_DIR, '..', 'data', 'data.csv')  
 
 def train_model():
     """

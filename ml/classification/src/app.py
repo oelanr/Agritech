@@ -11,7 +11,7 @@ sys.path.append(os.path.dirname(__file__))
 from arbre import NoeudArbre  # Import explicite de la classe
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, 'models', 'modele_arbre2.joblib')
+MODEL_PATH = os.path.join(BASE_DIR, '..', 'models', 'modele_arbre2.joblib')
 
 app = FastAPI(
     title="API de Prédiction Agrichat",
