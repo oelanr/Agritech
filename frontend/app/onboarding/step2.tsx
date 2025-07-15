@@ -1,78 +1,112 @@
-import { ImageBackground, View, Text, Button, StyleSheet, Image, Pressable} from 'react-native';
-import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 
-export default function Step2() {
-  const router = useRouter();
-
-
+const step2 = () => {
   return (
-    <ImageBackground
-      source={require('../../assets/images/Onboarding_prevision.png')}
-      style={styles.background} 
-      resizeMode="cover"
-    >
+    <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-            <Image
-                source={require('../../assets/images/Progress_bar2.png')} 
-                style={{ marginTop: 450, marginLeft: 10}}
-            />
-            <View style={{ marginTop: 15, padding:10, display:'flex', gap: 2 }}>
-                <Text style={styles.title}>Récoltez au</Text>
-                <Text style={styles.title}>bon moment</Text>
-            </View>
-            <Text style={styles.description}>
-                Nous vous donnerons une suivie de vos plantations par vérification régulière, ainsi la récolte vous sera plus facile à prévoir. 
-            </Text>
-           
-            <Pressable style={styles.button} onPress={() => router.push('/onboarding/step3')}>
-                <Text style={styles.buttonText}>Continuer</Text>
-            </Pressable>
+        <Text style={styles.title}>Bienvenue dans AgriTech</Text>
+
+        <Text style={styles.link}>
+          Protégez vos récoltes en appliquant les traitements fournis
+        </Text>
+
+        <Image
+          source={require("../../assets/image/agriculteur.jpg")}
+          style={styles.image}
+        />
+
+        <Text style={styles.subtitle}>Traitements adéquat</Text>
+
+        <Text style={styles.description}>
+          Une aide approfondie grâce à notre modèle spécialisé dans les soins
+          des cultures agricoles vous avantagera encore plus
+        </Text>
+      </View>
+
+      <View style={styles.footer}>
+        <View style={styles.dots}>
+          <View style={styles.dot} />
+          <View style={styles.dotActive} />
+          <View style={styles.dot} /> 
         </View>
-    </ImageBackground>
+
+        <TouchableOpacity >
+          <Text style={styles.next} onPress={() => router.push('/onboarding/step3')}>Suivant </Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  background: {
+  container: {
     flex: 1,
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    justifyContent: 'space-between',
   },
   content: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    padding: 25,
-    
-    
+    marginTop: 20,
   },
   title: {
-    fontSize: 35,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 0,
-    color: 'white', 
+    marginBottom: 6,
   },
-  button: {
-    backgroundColor: '#DFC376',
-    paddingVertical: 12,
+  link: {
+    marginTop:10,
+    marginBottom:10,
+    fontSize:20,
+    fontWeight:"medium"
+  },
+  image: {
     width: '100%',
-    borderRadius: 16,
-    marginBottom: 120
+    height: 300,
+    borderRadius: 20,
+    marginBottom: 20,
   },
-  buttonText: {
-    color: 'white',
+  subtitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center'
+    fontWeight: "bold",
+    marginTop:10,
+    marginBottom: 10,
   },
   description: {
-    
-    fontSize: 13,
-    color: '#FFFF', 
-    fontWeight: 'bold',
-    marginHorizontal: 11,
-    marginTop: 15,
-    marginBottom: 30
-    
+    marginTop:10,
+    fontSize: 20,
+    color: '#333',
+    lineHeight: 30,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  dots: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  dot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#ccc',
+  },
+  dotActive: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#000',
+  },
+  next: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#000',
   },
 });
 
+export default step2;
