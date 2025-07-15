@@ -9,8 +9,9 @@ import time
 # Get the absolute path of the directory containing the current script (agrichat/)
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-docs_path = os.path.join(script_dir, './Chatdata')
-db_path = os.path.join(script_dir, './Chatdata', 'chroma_langchain_db')
+
+docs_path = os.path.join(script_dir, './data')
+db_path = os.path.join(script_dir, './data', 'chroma_langchain_db')
 
 print(f"Loading docs from {docs_path}")
 print(f"Loading database from {db_path}")
