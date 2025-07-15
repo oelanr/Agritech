@@ -1,15 +1,18 @@
 import { Stack } from 'expo-router';
+import CustomHeader from '@/components/CustomHeader';
 
 export default function HomeLayout() {
   return (
     <Stack>
       <Stack.Screen
         name="index"
-        options={{ title: 'Accueil' }}
-      />
-      <Stack.Screen
-        name="details"
-        options={{ title: 'Détails' }}
+        options={{
+          headerTitle: () => <CustomHeader />,
+          headerShadowVisible: false,
+          headerStyle: {
+            backgroundColor: '#FFF',
+          },
+        }}
       />
     </Stack>
   );

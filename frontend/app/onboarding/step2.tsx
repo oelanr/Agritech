@@ -14,7 +14,7 @@ const step2 = () => {
         </Text>
 
         <Image
-          source={require("../../assets/image/agriculteur.jpg")}
+          source={require("../../assets/images/agriculteur.jpg")}
           style={styles.image}
         />
 
