@@ -7,6 +7,12 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Remonte 3 niveaux (de src/ vers la racine projet)
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..', '..', '..'))
+
+DATA_PATH = os.path.join(PROJECT_ROOT, 'data', 'data.csv')
+MODEL_PATH = os.path.join(PROJECT_ROOT, 'models', 'modele_arbre2.joblib')
+
 def entropie(exemples):
     total = len(exemples)
     if total == 0:
@@ -86,21 +92,9 @@ def construire_arbre_id3(data, features):
     
     return racine
 
-# # Chemin vers les fichiers
-# DATA_PATH = 'ml/classification/data/data.csv'
-# MODEL_PATH = 'ml/classification/models/modele_arbre2.joblib'
-
-
-MODEL_PATH = os.path.join(BASE_DIR, '..', 'models', 'modele_arbre2.joblib')
-DATA_PATH = os.path.join(BASE_DIR, '..', 'data', 'data.csv')  
-
 def train_model():
-    """
-    Charge les données, entraîne le modèle d'arbre de décision et le sauvegarde.
-    """
     print("--- Début de l'entraînement ---")
     
-    # Charger les données
     try:
         df = pd.read_csv(DATA_PATH)
         print(f"Données chargées depuis '{DATA_PATH}'.")
@@ -108,18 +102,14 @@ def train_model():
         print(f"Erreur: Le fichier '{DATA_PATH}' est introuvable.")
         return
 
-    # Convertir le DataFrame en liste de dictionnaires (format attendu par l'algo)
     data = df.to_dict(orient='records')
     
-    # Identifier les features et la cible
     features = [col for col in df.columns if col != 'maladie']
     print(f"Features utilisées pour l'entraînement: {features}")
 
-    # Construire l'arbre
     print("Construction de l'arbre de décision...")
     arbre = construire_arbre_id3(data, features)
     
-    # Sauvegarder le modèle
     print(f"Sauvegarde du modèle dans '{MODEL_PATH}'...")
     joblib.dump(arbre, MODEL_PATH)
     

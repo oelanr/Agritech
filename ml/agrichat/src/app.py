@@ -1,7 +1,7 @@
 # app.py
 from fastapi import FastAPI, HTTPException
-from .schema import ChatRequest, ChatResponse
-from .rag_pipeline import build_rag_graph
+from schema import ChatRequest, ChatResponse
+from rag_pipeline import build_rag_graph
 from langchain_core.messages import HumanMessage
 from fastapi.middleware.cors import CORSMiddleware
 

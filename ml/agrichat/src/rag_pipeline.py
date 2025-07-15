@@ -2,8 +2,8 @@
 from langgraph.graph import StateGraph, MessagesState, END
 from langgraph.prebuilt import tools_condition, ToolNode
 from langchain_core.messages import SystemMessage
-from .tools import retrieve
-from .config import llm
+from tools import retrieve
+from config import llm
 from langgraph.checkpoint.memory import MemorySaver
 
 def query_or_respond(state: MessagesState):

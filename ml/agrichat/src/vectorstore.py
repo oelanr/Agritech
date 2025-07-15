@@ -3,7 +3,7 @@ import os
 from langchain_community.document_loaders import DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
-from .config import embeddings
+from config import embeddings
 import time
 
 # Get the absolute path of the directory containing the current script (agrichat/)

@@ -1,6 +1,6 @@
 # tools.py
 from langchain_core.tools import tool
-from .vectorstore import vector_store
+from vectorstore import vector_store
 
 @tool(response_format="content_and_artifact")
 def retrieve(query: str):
