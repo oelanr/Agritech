@@ -16,7 +16,7 @@ const step1 = () => {
         </Pressable>
 
         <Image
-          source={require('../../assets/image/riziere.png')}
+          source={require('../../assets/images/riziere.png')}
           style={styles.image}
         />
 
