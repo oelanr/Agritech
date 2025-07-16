@@ -2,15 +2,12 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import {
-  Platform,
+
   TouchableOpacity,
-  View,
-  StyleSheet,
+ 
   Image,
 } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
