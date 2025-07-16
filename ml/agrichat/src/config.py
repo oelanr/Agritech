@@ -29,7 +29,12 @@ else:
     if not groq_api_key:
         raise ValueError("GROQ_API_KEY not found in environment or secret file.")
 
-llm = init_chat_model(model="gemma2-9b-it", model_provider="groq")
+llm = init_chat_model(
+    model="gemma2-9b-it",
+    model_provider="groq",
+    temperature=0.3,
+    top_p=0.9
+)
 print("LLM model loaded successfully.")
 
 # Affichage du chemin cache HF (pour debug)
