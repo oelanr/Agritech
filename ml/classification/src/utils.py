@@ -2,7 +2,7 @@ import pandas as pd
 import joblib
 import math
 from collections import Counter
-from arbre import NoeudArbre
+from .arbre import NoeudArbre
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

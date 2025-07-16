@@ -1,25 +1,28 @@
-import os
 import sys
+import os
 
+# === Ajouter les chemins des modules custom ===
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+# Pour arbre.py
+ARBRE_PATH = os.path.abspath(os.path.join(BASE_DIR, "../ml/classification/src"))
+sys.path.append(ARBRE_PATH)
 
-sys.path.append(base_dir)
-sys.path.append(os.path.join(base_dir, 'ml', 'classification', 'src'))
-sys.path.append(os.path.join(base_dir,  'ml', 'agrichat', 'src'))
+# Pour rag_pipeline.py et schema.py
+AGRICHAT_PATH = os.path.abspath(os.path.join(BASE_DIR, "../ml/agrichat/src"))
+sys.path.append(AGRICHAT_PATH)
 
+# === Imports ===
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import joblib
-
-# Import du chatbot
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.messages import HumanMessage
 
-from arbre import NoeudArbre
+from arbre import NoeudArbre  # Pour la désérialisation joblib
 from rag_pipeline import build_rag_graph
+from tools import retrieve  # ajoute ça tout en haut
 from schema import ChatRequest, ChatResponse
-
 
 # === Initialisation FastAPI unique ===
 app = FastAPI(
@@ -37,9 +40,7 @@ app.add_middleware(
 )
 
 # === Variables globales ===
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, '..', 'models', 'modele_arbre2.joblib')
-
 arbre = None
 chat_graph = None
 
@@ -104,13 +105,14 @@ def chat(req: ChatRequest):
         return ChatResponse(answer=output["messages"][-1].content)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# === Endpoint combiné ===
+
 @app.post("/predict_and_chat")
 def predict_and_chat(input_data: SymptomesInput):
     global arbre, chat_graph
-    if arbre is None:
-        raise HTTPException(status_code=500, detail="Modèle non chargé")
-    if chat_graph is None:
-        raise HTTPException(status_code=500, detail="Chatbot non chargé")
+    if not all([arbre, chat_graph]):
+        raise HTTPException(status_code=500, detail="Un ou plusieurs modèles ne sont pas chargés.")
 
     exemple = input_data.dict()
     prediction = arbre.predire(exemple)
@@ -118,24 +120,37 @@ def predict_and_chat(input_data: SymptomesInput):
     if prediction is None:
         raise HTTPException(status_code=400, detail="Impossible de prédire avec les données fournies.")
 
-    # Construire un prompt pour le chatbot à partir de la prédiction
+    # Prompt pour le chatbot
     prompt = f"La maladie détectée est {prediction}. Quels conseils pouvez-vous donner ?"
 
-    # Appeler le chatbot avec ce prompt
     try:
         output = chat_graph.invoke(
             {"messages": [HumanMessage(content=prompt)]},
             config={"configurable": {"thread_id": "predict_and_chat"}}
         )
-        answer = output["messages"][-1].content
+        raw_answer = output["messages"][-1].content
+
+        # Vérifie si le chatbot demande à appeler un outil
+        if "<tool_use>" in raw_answer and "retrieve" in raw_answer:
+            # On extrait manuellement le paramètre (naïvement ici)
+            import re, json
+
+            match = re.search(r'"query"\s*:\s*"([^"]+)"', raw_answer)
+            if match:
+                query = match.group(1)
+                final_answer = retrieve(query)  # appelle le vrai outil
+            else:
+                final_answer = "Erreur : paramètre 'query' introuvable dans le tool_use."
+        else:
+            final_answer = raw_answer
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur chatbot : {str(e)}")
 
     return {
         "prediction": prediction,
-        "chatbot_answer": answer
+        "chatbot_answer": final_answer
     }
-
 
 
 # === Root simple ===
