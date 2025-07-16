@@ -14,6 +14,16 @@ export default function ScanLayout() {
           },
         }}
       />
+      <Stack.Screen
+        name="analyse"
+        options={{
+          headerTitle: () => <CustomHeader />,
+          headerShadowVisible: false,
+          headerStyle: {
+            backgroundColor: '#FFF',
+          },
+        }}
+      />
     </Stack>
   );
 }
