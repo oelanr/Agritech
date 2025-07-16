@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'corsheaders', # <-- AJOUTEZ CETTE LIGNE
     'accounts',
     'scans',
+    'chatbot',
 ]
 # configuration ny restAPI
 REST_FRAMEWORK = {
