@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from .models import HistoriqueScan
 from .serializers import HistoriqueScanSerializer
 
-class HistoriqueScanView(APIView):
+class ListeHistoriqueScanView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -12,6 +12,9 @@ class HistoriqueScanView(APIView):
         historiques = HistoriqueScan.objects.filter(utilisateur=request.user).order_by('-date_scan')
         serializer = HistoriqueScanSerializer(historiques, many=True)
         return Response(serializer.data)
+
+class NouveauScanView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         """Sauvegarder un nouveau scan"""
