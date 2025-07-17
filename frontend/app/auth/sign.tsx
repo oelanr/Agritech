@@ -1,4 +1,3 @@
-
 import React,{useState} from 'react';
 import {
   View,
@@ -9,7 +8,7 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
-  ActivityIndicator,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from "expo-router";
@@ -30,7 +29,6 @@ const SignUpScreen: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const handleSignUp = async () => {
-        // Validation des données côté client
         if (!username || !password || !confirmPassword) {
             Alert.alert('Erreur', 'Veuillez remplir tous les champs.');
             return;
@@ -41,21 +39,18 @@ const SignUpScreen: React.FC = () => {
             return;
         }
 
-        setIsLoading(true); // Activez l'indicateur de chargement
+        setIsLoading(true);
 
         try {
-            // Appel de l'API d'inscription
             const response: AxiosResponse<AuthResponse> = await api.post<AuthResponse>('/register/', { username, password });
             
             const { token } = response.data;
             
-            // Le token est renvoyé par le backend, il peut être stocké
             await AsyncStorage.setItem('authToken', token);
 
             Alert.alert('Succès', 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
             
-            // Redirection vers la page de connexion après l'inscription réussie
-            router.push("/auth/login"); // Assurez-vous que la route '/login' est correcte
+            router.push("/auth/login");
 
         } catch (error) {
             const axiosError = error as AxiosError<AuthErrorResponse>;
@@ -66,7 +61,7 @@ const SignUpScreen: React.FC = () => {
                 Alert.alert('Erreur réseau', 'Impossible de se connecter au serveur. Vérifiez votre connexion.');
             }
         } finally {
-            setIsLoading(false); // Désactivez l'indicateur de chargement
+            setIsLoading(false);
         }
     };
 
@@ -110,16 +105,16 @@ const SignUpScreen: React.FC = () => {
             />
 
           <TouchableOpacity 
-                        style={[styles.signInButton, isLoading && styles.signInButtonDisabled]}
-                        onPress={handleSignUp}
-                        disabled={isLoading}
-                    >
-                        {isLoading ? (
-                            <ActivityIndicator color="#fff" />
-                        ) : (
-                            <Text style={styles.signInButtonText}>Sign up</Text>
-                        )}
-                    </TouchableOpacity>
+                                 style={[styles.signInButton, isLoading && styles.signInButtonDisabled]}
+                                 onPress={handleSignUp}
+                                 disabled={isLoading}
+                             >
+                                 {isLoading ? (
+                                     <ActivityIndicator color="#fff" />
+                                 ) : (
+                                     <Text style={styles.signInButtonText}>Sign up</Text>
+                                 )}
+                             </TouchableOpacity>
           
           <Text style={styles.alreadyAccountText} onPress={() => router.push("/auth/login")}>Already account ?</Text>
 

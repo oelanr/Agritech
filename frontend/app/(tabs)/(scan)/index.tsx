@@ -1,60 +1,87 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import de AsyncStorage
 
 const SymptomSelector = () => {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const router = useRouter();
 
-  const userName = "Salanitra, User";
-  const userInitial = userName.charAt(0); 
+  // Mapping des noms d'affichage des symptômes aux clés attendues par le backend
+  const symptomKeyMap: { [key: string]: string } = {
+    'Taches': 'taches',
+    'Feuilles brune': 'bord_feuille_brun',
+    'Flétrissures': 'fletrissure',
+    'Champignon': 'presence_champignons',
+    'Feuilles jaune': 'feuille_jaune',
+    'Tâches circulaire': 'taches_circulaires',
+    'Pluie récente': 'pluie_recente',
+    'Fértilisation récente': 'fertilisation_recente',
+  };
 
   const symptoms = [
-    { name: 'Taches',
-      icon: require('../../../assets/images/tache.png')
-     },
-    { name: 'Feuilles brune',
-      icon: require('../../../assets/images/feuillebr.png')
-     },
-    { name: 'Flétrissures', 
-      icon: require('../../../assets/images/fletrissure.png')
-     },
-    { name: 'Champignon', 
-      icon: require('../../../assets/images/champignon.png')
-     },
-    { name: 'Feuilles jaune', 
-      icon: require('../../../assets/images/jaune.png') 
-    },
-    { name: 'Tâches circulaire', 
-      icon: require('../../../assets/images/tachecirculaire.png') 
-    },
-    { name: 'Pluie récente', 
-      icon: require('../../../assets/images/pluie.png') 
-    },
-    { name: 'Fértilisation récente', 
-      icon: require('../../../assets/images/fertilisation.png')
-    },
-    { name: 'Vent', 
-      icon: require('../../../assets/images/vent.png') 
-    },
+    { name: 'Taches', icon: require('../../../assets/images/tache.png') },
+    { name: 'Feuilles brune', icon: require('../../../assets/images/feuillebr.png') },
+    { name: 'Flétrissures', icon: require('../../../assets/images/fletrissure.png') },
+    { name: 'Champignon', icon: require('../../../assets/images/champignon.png') },
+    { name: 'Feuilles jaune', icon: require('../../../assets/images/jaune.png') },
+    { name: 'Tâches circulaire', icon: require('../../../assets/images/tachecirculaire.png') },
+    { name: 'Pluie récente', icon: require('../../../assets/images/pluie.png') },
+    { name: 'Fértilisation récente', icon: require('../../../assets/images/fertilisation.png') },
   ];
 
   const toggleSymptom = (symptomName: string) => {
     setSelectedSymptoms(prev =>
-      prev.includes(symptomName) ? prev.filter(s => s !== symptomName): [...prev, symptomName]
+      prev.includes(symptomName) ? prev.filter(s => s !== symptomName) : [...prev, symptomName]
     );
+  };
+
+  // Fonction pour gérer le clic sur le bouton "Choisir"
+  const handleChooseSymptoms = async () => {
+    // Initialiser l'objet avec toutes les clés de symptômes à false
+    // et les clés environnementales à null/valeur par défaut, car elles seront définies sur la page suivante.
+    const inputData: { [key: string]: boolean | string | null } = {
+      taches: false,
+      feuille_jaune: false,
+      taches_circulaires: false,
+      bord_feuille_brun: false,
+      fletrissure: false,
+      presence_champignons: false,
+      pluie_recente: false,
+      fertilisation_recente: false,
+      // Les champs suivants seront remplis sur la page suivante
+      humidite: null,
+      luminosite: null,
+      vent: null,
+      stade_croissance: null,
+      type_sol: null,
+      irrigation: null,
+    };
+
+    // Mettre à jour les valeurs booléennes pour les symptômes sélectionnés
+    selectedSymptoms.forEach(symptomName => {
+      const backendKey = symptomKeyMap[symptomName];
+      if (backendKey) {
+        inputData[backendKey] = true;
+      }
+    });
+
+    try {
+      // Sauvegarder les données dans AsyncStorage
+      await AsyncStorage.setItem('currentAnalysisInput', JSON.stringify(inputData));
+      Alert.alert('Succès', 'Symptômes sauvegardés. Veuillez compléter les informations environnementales.');
+      
+      // Naviguer vers la prochaine page
+      router.push('/(tabs)/(scan)/analyse'); 
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde des symptômes :", error);
+      Alert.alert('Erreur', 'Impossible de sauvegarder les symptômes. Veuillez réessayer.');
+    }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-     { /*<View style={styles.userHeader}>
-        <View style={styles.userCercle}>
-          <Text style={styles.userInitial}>{userInitial}</Text>
-        </View>
-        <Text style={styles.userName}>{userName}</Text>
-      </View>
-     */}
       <View style={styles.titleAnal}>
         <Feather name="arrow-left" size={20} color="black" />
         <Text style={styles.title}>Nouvelle analyse</Text>
@@ -73,7 +100,7 @@ const SymptomSelector = () => {
           return (
             <View key={index} style={styles.symptomContainer}>
               <TouchableOpacity
-                style={styles.symptomButton}
+                style={[styles.symptomButton, isSelected && { borderColor: '#255C50', borderWidth: 2 }]}
                 onPress={() => toggleSymptom(symptom.name)}
               >
                 <Image source={symptom.icon} style={styles.icon} resizeMode="contain" />
@@ -88,7 +115,7 @@ const SymptomSelector = () => {
 
       <TouchableOpacity
         style={styles.chooseButton}
-        onPress={() => router.push('/(tabs)/(scan)/analyse')}
+        onPress={handleChooseSymptoms} // Appelle la fonction de sauvegarde et de navigation
       >
         <Text style={styles.chooseButtonText}>Choisir</Text>
       </TouchableOpacity>

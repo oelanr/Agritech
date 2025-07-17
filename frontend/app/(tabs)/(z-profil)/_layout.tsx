@@ -14,6 +14,20 @@ export default function ProfilLayout() {
           },
         }}
       />
+       <Stack.Screen
+          name="edit-profil"
+          options={{
+          headerShown: false, 
+           }}
+       
+        />
+        <Stack.Screen
+          name="change-password"
+          options={{
+          headerShown: false, 
+          }}
+       
+       />
     </Stack>
   );
 }

@@ -44,6 +44,9 @@ const SignInScreen: React.FC = () => {
       const { token } = response.data;
       
       await AsyncStorage.setItem('authToken', token);
+      // --- NOUVEAU : Stocker le nom d'utilisateur après une connexion réussie ---
+      await AsyncStorage.setItem('username', username); // Stocke le nom d'utilisateur
+      // --------------------------------------------------------------------
 
       Alert.alert('Succès', 'Connexion réussie !');
       
@@ -101,16 +104,16 @@ const SignInScreen: React.FC = () => {
           </TouchableOpacity>
 
           <TouchableOpacity 
-                        style={[styles.signInButton, isLoading && styles.signInButtonDisabled]}
-                        onPress={handleLogin}
-                        disabled={isLoading}
-                    >
-                        {isLoading ? (
-                            <ActivityIndicator color="#fff" />
-                        ) : (
-                            <Text style={styles.signInButtonText}>Sign in</Text>
-                        )}
-                    </TouchableOpacity>
+                                 style={[styles.signInButton, isLoading && styles.signInButtonDisabled]}
+                                 onPress={handleLogin}
+                                 disabled={isLoading}
+                             >
+                                 {isLoading ? (
+                                     <ActivityIndicator color="#fff" />
+                                 ) : (
+                                     <Text style={styles.signInButtonText}>Sign in</Text>
+                                 )}
+                             </TouchableOpacity>
           <TouchableOpacity style={styles.socialButton}>
             <Image source={googleLogo} style={styles.socialIcon} />
             <Text style={styles.socialButtonText}>Continuer avec google</Text>
@@ -234,7 +237,7 @@ const styles = StyleSheet.create({
     height: 20,
     resizeMode: 'contain',
   },
-   signInButtonDisabled: {
+    signInButtonDisabled: {
         opacity: 0.5,
     },
 });
