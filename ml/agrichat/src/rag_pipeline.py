@@ -7,7 +7,7 @@ from tools import retrieve
 from config import llm
 from langgraph.checkpoint.memory import MemorySaver
 
-# --- 1. Fonctions de routage et de génération ---
+# Fonctions de routage et de génération
 
 def route_message(state: MessagesState) -> Literal["technical_route", "simple_route", "off_topic_route"]:
     """
@@ -101,7 +101,7 @@ def generate_technical_response(state: MessagesState):
     response = llm.invoke(prompt)
     return {"messages": [response]}
 
-# --- 2. Construction du Graphe ---
+# Construction du Graphe
 
 def build_rag_graph():
     graph_builder = StateGraph(MessagesState)
@@ -113,7 +113,7 @@ def build_rag_graph():
     graph_builder.add_node("tools", ToolNode([retrieve]))
     graph_builder.add_node("generate_technical_response", generate_technical_response)
 
-    # Le point d'entrée est maintenant conditionnel à trois voies
+    # Le point d'entrée maintenant conditionnel à trois voies
     graph_builder.set_conditional_entry_point(
         route_message,
         {

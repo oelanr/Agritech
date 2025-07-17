@@ -1,7 +1,7 @@
 import sys
 import os
 
-# === Ajouter les chemins des modules custom ===
+# Chemins des modules custom
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Pour arbre.py
@@ -12,7 +12,7 @@ sys.path.append(ARBRE_PATH)
 AGRICHAT_PATH = os.path.abspath(os.path.join(BASE_DIR, "../ml/agrichat/src"))
 sys.path.append(AGRICHAT_PATH)
 
-# === Imports ===
+# Imports 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import joblib
@@ -20,11 +20,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.messages import HumanMessage
 
 from arbre import NoeudArbre  # Pour la désérialisation joblib
-from rag_pipeline import build_rag_graph
-from tools import retrieve  # ajoute ça tout en haut
-from schema import ChatRequest, ChatResponse
+from rag_pipeline import build_rag_graph #pour le RAG
+from tools import retrieve  #Pour l'outil retrieve du LLM
+from schema import ChatRequest, ChatResponse 
 
-# === Initialisation FastAPI unique ===
+# Initialisation FastAPI unique 
 app = FastAPI(
     title="API Agrichat",
     description="API classification maladies + chatbot",
@@ -39,12 +39,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# === Variables globales ===
+#ariables globales
 MODEL_PATH = os.path.join(BASE_DIR, '..', 'models', 'modele_arbre2.joblib')
 arbre = None
 chat_graph = None
 
-# === Chargement des modèles au démarrage ===
+#Chargement des modèles au démarrage
 @app.on_event("startup")
 def startup_event():
     global arbre, chat_graph
@@ -52,12 +52,12 @@ def startup_event():
         arbre = joblib.load(MODEL_PATH)
         print(f"Modèle chargé depuis {MODEL_PATH}")
     except FileNotFoundError:
-        raise RuntimeError(f"Modèle non trouvé à {MODEL_PATH}. Entraîne-le avec train.py")
+        raise RuntimeError(f"Modèle non trouvé à {MODEL_PATH}. Entraînement nécéssaire (via train.py)")
 
     chat_graph = build_rag_graph()
     print("Chatbot RAG chargé")
 
-# === Modèle Pydantic pour classification ===
+# Modèle Pydantic pour classification 
 class SymptomesInput(BaseModel):
     taches: bool
     feuille_jaune: bool
@@ -74,7 +74,7 @@ class SymptomesInput(BaseModel):
     type_sol: str
     irrigation: str
 
-# === Endpoint classification ===
+#Endpoint classification
 @app.post("/predict")
 def predict_sante(input_data: SymptomesInput):
     global arbre
@@ -92,7 +92,7 @@ def predict_sante(input_data: SymptomesInput):
         "detail": f"Classe prédite par l'arbre de décision : {prediction}"
     }
 
-# === Endpoint chatbot ===
+# Endpoint chatbot 
 @app.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest):
     global chat_graph
@@ -106,13 +106,13 @@ def chat(req: ChatRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# === Endpoint combiné ===
+# Endpoint combiné (Requete chatbot après classification)
 
 @app.post("/predict_and_chat")
 def predict_and_chat(input_data: SymptomesInput):
     global arbre, chat_graph
     if not all([arbre, chat_graph]):
-        raise HTTPException(status_code=500, detail="Un ou plusieurs modèles ne sont pas chargés.")
+        raise HTTPException(status_code=500, detail="Modèle(s) non chargé(s).")
 
     exemple = input_data.dict()
     prediction = arbre.predire(exemple)
@@ -153,7 +153,7 @@ def predict_and_chat(input_data: SymptomesInput):
     }
 
 
-# === Root simple ===
+# Root simple
 @app.get("/")
 def root():
     return {"message": "Agrichat API is running 🚀"}

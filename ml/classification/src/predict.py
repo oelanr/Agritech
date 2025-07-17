@@ -10,7 +10,7 @@ try:
     print(f"Modèle chargé depuis '{MODEL_PATH}'.")
 except FileNotFoundError:
     arbre = None
-    print(f"Erreur: Le modèle '{MODEL_PATH}' n'a pas été trouvé. Entraîne-le avec train.py")
+    print(f"Erreur: Le modèle '{MODEL_PATH}' n'a pas été trouvé. Réentrainement nécessaire (via utils.py)")
 
 def predict(exemple):
     if arbre is None:

@@ -7,11 +7,11 @@ import os
 
 load_dotenv()
 
-# Function to load API key from secret file (which contains the whole .env)
+# Loading des api keys (via .env)
 def load_api_key_from_secret(secret_path, key_name):
     if os.path.exists(secret_path):
         with open(secret_path, "r") as f:
-            # Read the entire content of the mounted .env file
+            # Lecture du fichier .env 
             env_content = f.read()
         # Parse the content using dotenv_values
         env_vars = dotenv_values(stream=io.StringIO(env_content))
@@ -19,15 +19,15 @@ def load_api_key_from_secret(secret_path, key_name):
             return env_vars[key_name]
     return None
 
-# Initialisation du modèle de langage (LLM) - via GROQ
+# Initialisation du modèle de langage (LLM) - via GROQCLOUD
 groq_api_key = load_api_key_from_secret("/run/secrets/groq_api_key", "GROQ_API_KEY")
 if groq_api_key:
     os.environ["GROQ_API_KEY"] = groq_api_key
 else:
-    # Fallback to os.getenv for local development or if secret not found
+    # Fallback vers os.getenv 
     groq_api_key = os.getenv("GROQ_API_KEY")
     if not groq_api_key:
-        raise ValueError("GROQ_API_KEY not found in environment or secret file.")
+        raise ValueError("GROQ_API_KEY non trouvé danas l'environnement.")
 
 llm = init_chat_model(
     model="gemma2-9b-it",
@@ -35,9 +35,9 @@ llm = init_chat_model(
     temperature=0.3,
     top_p=0.9
 )
-print("LLM model loaded successfully.")
+print("LLM chargé.")
 
-# Affichage du chemin cache HF (pour debug)
+# Affichage du chemin cache HF (Utilisé pour débug uniquement)
 cache_dir = Path.home() / ".cache" / "huggingface" / "transformers"
 print(f"HuggingFace cache directory: {cache_dir}")
 
@@ -57,4 +57,4 @@ embeddings = HuggingFaceEndpointEmbeddings(
     task="feature-extraction",
     huggingfacehub_api_token=hf_api_key
 )
-print("HuggingFace embeddings model loaded successfully.")
+print("HuggingFace embeddings model chargé.")
