@@ -1,8 +1,6 @@
-# urls.py
 from django.urls import path
-from .views import ListeHistoriqueScanView, NouveauScanView
+from .views import HistoriqueScanView,ClassificationView,ChatbotView
 
 urlpatterns = [
-    path('historique/', ListeHistoriqueScanView.as_view(), name='liste_historique'),
-    path('savescan/', NouveauScanView.as_view(), name='nouveau_scan'),
+    path('historique/', HistoriqueScanView.as_view(), name='historique_scan'),
 ]

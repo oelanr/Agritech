@@ -16,7 +16,8 @@ class ChatPredictView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):        
-        url = 'http://localhost:8000/predict_and_chat'
+        # url = 'http://localhost:8000/predict_and_chat'
+        url = 'http://127.0.0.1:8000/predict_and_chat'
         input_data = request.data.get("input")
 
         try:

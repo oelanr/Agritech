@@ -3,9 +3,12 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIn
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '@/services/api'; 
-import { AuthErrorResponse } from '@/services/types';
-import { AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios'; // Importez axios directement
+import api from '@/services/api'; // Ceci est probablement votre instance axios pour Django
+
+// REMPLACEZ 'VOTRE_IP_LOCALE' par l'adresse IP de votre PC (ex: '192.168.1.10')
+const BASE_URL_DJANGO = 'http://192.168.88.251:8001'; // Pour les appels Django (login, historique)
+const BASE_URL_FASTAPI = 'http://192.168.88.251:8000'; // Pour les appels FastAPI (analyse, chatbot)
 
 type DropdownKey =
   | 'humidite'
@@ -32,6 +35,19 @@ const data: Record<DropdownKey, string[]> = {
   typeSol: ['sableux', 'argileux', 'limonneux', 'humifère'],
   irrigation: ['naturelle', 'artificielle', 'aucune'],
 };
+
+// Interface pour la structure des erreurs de l'API
+interface ApiErrorResponse {
+  detail?: string;
+  error?: string;
+  message?: string;
+}
+
+// Interface pour le résultat de l'analyse renvoyé par FastAPI
+interface AnalysisResultResponse {
+  diagnostic_type: string; // Exemple de champ renvoyé par votre API FastAPI
+  // Ajoutez d'autres champs si votre API renvoie plus de données d'analyse
+}
 
 export default function AnalyseForm() {
   const [selections, setSelections] = useState<Record<DropdownKey, string>>({
@@ -128,8 +144,10 @@ export default function AnalyseForm() {
     setIsLoading(true);
 
     try {
-      const finalInput: { [key: string]: boolean | string } = { ...initialAnalysisInput };
+      // Fusionner les symptômes initiaux avec les sélections environnementales
+      const finalInput: { [key: string]: boolean | string | null } = { ...initialAnalysisInput };
 
+      // Mettre à jour avec les données du formulaire actuel
       for (const key in selections) {
         if (Object.prototype.hasOwnProperty.call(selections, key)) {
           const backendKey = backendKeyMap[key as DropdownKey];
@@ -138,16 +156,28 @@ export default function AnalyseForm() {
           }
         }
       }
+      
+      // Supprimer les clés qui sont restées à `null` (celles de la page précédente)
+      Object.keys(finalInput).forEach(key => {
+        if (finalInput[key] === null) {
+          delete finalInput[key];
+        }
+      });
 
-      console.log('Données envoyées au backend:', { input: finalInput });
+      console.log('Données envoyées au backend FastAPI pour prédiction:', finalInput);
 
-      // Appel API
-      const response = await api.post('http://127.0.0.1:8001/api/chat/chat-predict/', { input: finalInput });
+      // Envoyer l'objet JSON directement à un endpoint de prédiction (ex: /chat-predict)
+      // Assurez-vous que votre backend FastAPI a une route comme celle-ci qui accepte l'objet
+      const response = await api.post(`${BASE_URL_FASTAPI}/chat-predict`, finalInput);
 
-      // --- DÉBUT DU NOUVEAU CODE D'AFFICHAGE PAR ALERTE ---
+      // Stocker le résultat de l'analyse
+      if (response.data) {
+        await AsyncStorage.setItem('lastAnalysisResult', JSON.stringify(response.data));
+      }
+
       Alert.alert(
         'Analyse terminée',
-        `Votre analyse a été soumise avec succès !\n\nDonnées envoyées:\n${JSON.stringify(finalInput, null, 2)}`,
+        `Votre analyse a été soumise avec succès !\n\nDonnées envoyées:\n${JSON.stringify(finalInput, null, 2)}\n\nRéponse du serveur:\n${JSON.stringify(response.data, null, 2)}`,
         [
           {
             text: 'OK',
@@ -159,18 +189,18 @@ export default function AnalyseForm() {
         ],
         { cancelable: false }
       );
-      // --- FIN DU NOUVEAU CODE D'AFFICHAGE PAR ALERTE ---
 
-      console.log('Réponse du backend:', response.data);
+      console.log('Réponse du backend FastAPI:', response.data);
 
     } catch (error) {
-      const axiosError = error as AxiosError<AuthErrorResponse>;
+      const axiosError = error as AxiosError<ApiErrorResponse>;
       let errorMessage = 'Une erreur est survenue lors de l\'analyse.';
       
       if (axiosError.response) {
-        errorMessage = axiosError.response.data?.error || 'Erreur du serveur inconnue.';
+        errorMessage = axiosError.response.data?.error || axiosError.response.data?.detail || axiosError.response.data?.message || `Erreur du serveur (code: ${axiosError.response.status}).`;
+        console.error("Détails de l'erreur API:", axiosError.response.data);
       } else if (axiosError.request) {
-        errorMessage = 'Impossible de se connecter au serveur. Vérifiez votre connexion internet.';
+        errorMessage = 'Impossible de se connecter au serveur FastAPI. Vérifiez votre connexion Wi-Fi, l\'adresse IP du serveur et le pare-feu.';
       } else {
         errorMessage = axiosError.message || 'Une erreur inattendue est survenue.';
       }
@@ -178,7 +208,6 @@ export default function AnalyseForm() {
       console.error("Erreur lors de l'envoi de l'analyse :", error);
       Alert.alert('Erreur d\'analyse', errorMessage);
     } finally {
-      
       setIsLoading(false);
     }
   };
@@ -235,7 +264,7 @@ const styles = StyleSheet.create({
     userCircle: {
     width: 60,
     height: 60,
-    borderRadius: '50%',
+    borderRadius: 30,
     backgroundColor: '#E1E1E1',
     justifyContent: 'center',
     alignItems: 'center',
@@ -305,7 +334,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#000000',
     padding: 15,
-    borderRadius: '10%',
+    borderRadius: 10,
     alignItems: 'center',
     marginTop: 30,
     marginBottom: 30,

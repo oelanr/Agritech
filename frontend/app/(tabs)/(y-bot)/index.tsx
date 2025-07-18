@@ -10,12 +10,15 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   SafeAreaView,
+  Image,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios, { AxiosError } from 'axios';
 
-// --- TYPES ET MOCKS D'API ---
-// Remplacez-les par vos vrais types et appels API (ex: avec fetch ou axios)
+const BASE_URL_FASTAPI = 'http://192.128.88.251:8000';
 
 interface Message {
   id: string;
@@ -23,65 +26,66 @@ interface Message {
   sender: 'user' | 'bot';
 }
 
-// --- CONFIGURATION API ---
-// TODO: Remplacez cette URL par l'adresse de votre backend.
-// Si vous testez sur un appareil physique, utilisez l'adresse IP de votre machine sur le réseau local.
-// Exemple: 'http://192.168.1.10:5000'
-const API_BASE_URL = 'http://VOTRE_API_URL';
+interface AnalysisResult {
+  diagnostic: string;
+}
 
-/**
- * Appelle votre API de classification.
- * @param message Le message de l'utilisateur.
- * @returns La catégorie du message. ex: { category: 'GENERAL_QUERY' }
- */
+interface ApiErrorResponse {
+  detail?: string;
+  error?: string;
+  message?: string;
+}
+
 const callClassificationApi = async (message: string): Promise<{ category: string }> => {
   console.log(`[API] Classification du message: "${message}"`);
-  const response = await fetch(`${API_BASE_URL}/classify`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ message }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Erreur API de classification (${response.status}): ${errorText}`);
-  }
-
-  return response.json();
+  const response = await axios.post(`${BASE_URL_FASTAPI}/classify`, { message });
+  return response.data;
 };
 
-/**
- * Appelle votre API de chatbot.
- * @param message Le message de l'utilisateur.
- * @returns La réponse du bot. ex: { reply: '...' }
- */
 const callChatbotApi = async (message: string): Promise<{ reply: string }> => {
   console.log(`[API] Obtention de la réponse du bot pour: "${message}"`);
-  const response = await fetch(`${API_BASE_URL}/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Erreur API du chatbot (${response.status}): ${errorText}`);
-  }
-
-  return response.json();
+  const response = await axios.post(`${BASE_URL_FASTAPI}/chat`, { message });
+  return response.data;
 };
 
-// --- COMPOSANT DE L'ÉCRAN ---
-
 export default function YBotScreen() {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: 'init', text: 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?', sender: 'bot' },
-  ]);
+  const router = useRouter();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [userName, setUserName] = useState('User');
+  const [diagnosticResult, setDiagnosticResult] = useState<string | null>(null);
   const flatListRef = useRef<FlatList>(null);
+
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        const storedUserName = await AsyncStorage.getItem('userName');
+        if (storedUserName) {
+          setUserName(storedUserName);
+        }
+
+        const storedAnalysisResult = await AsyncStorage.getItem('lastAnalysisResult');
+        if (storedAnalysisResult) {
+          const parsedResult: AnalysisResult = JSON.parse(storedAnalysisResult);
+          setDiagnosticResult(parsedResult.diagnostic);
+          setMessages([
+            { id: 'init-bot', text: `Bonjour, en fonction du résultat du diagnostic (${parsedResult.diagnostic}), je vous donnerais les traitements nécessaires à appliquer.`, sender: 'bot' },
+          ]);
+        } else {
+          setMessages([
+            { id: 'init-bot', text: 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?', sender: 'bot' },
+          ]);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des données initiales:", error);
+        setMessages([
+          { id: 'init-bot', text: 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?', sender: 'bot' },
+        ]);
+      }
+    };
+    loadInitialData();
+  }, []);
 
   const handleSend = async () => {
     if (input.trim().length === 0 || isLoading) return;
@@ -94,16 +98,13 @@ export default function YBotScreen() {
     setIsLoading(true);
 
     try {
-      // 1. Appel à l'API de classification
       const classification = await callClassificationApi(userMessageText);
 
       let botResponseText: string;
 
-      // 2. Logique basée sur la classification
       if (classification.category === 'INAPPROPRIATE_CONTENT') {
         botResponseText = "Je ne peux pas répondre à cette demande. Restons courtois.";
       } else {
-        // 3. Si tout va bien, appel à l'API du chatbot
         const chatResponse = await callChatbotApi(userMessageText);
         botResponseText = chatResponse.reply;
       }
@@ -113,33 +114,76 @@ export default function YBotScreen() {
 
     } catch (error) {
       console.error("Erreur lors de l'appel API:", error);
-      const errorMessage: Message = { id: `${Date.now()}-error`, text: "Désolé, une erreur est survenue. Veuillez réessayer.", sender: 'bot' };
+      const axiosError = error as AxiosError<ApiErrorResponse>;
+      let errorMessageText = "Désolé, une erreur est survenue. Veuillez réessayer.";
+
+      if (axiosError.response) {
+        errorMessageText = `Erreur du serveur: ${axiosError.response.status} - ${axiosError.response.data?.detail || axiosError.response.data?.error || axiosError.response.data?.message || 'Réponse inattendue'}`;
+      } else if (axiosError.request) {
+        errorMessageText = "Erreur réseau: Impossible de se connecter au serveur. Vérifiez votre IP et connexion.";
+      } else {
+        errorMessageText = `Erreur inattendue: ${axiosError.message}`;
+      }
+
+      const errorMessage: Message = { id: `${Date.now()}-error`, text: errorMessageText, sender: 'bot' };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Fait défiler la liste vers le bas quand un nouveau message arrive
   useEffect(() => {
     if (flatListRef.current) {
       flatListRef.current.scrollToEnd({ animated: true });
     }
   }, [messages]);
 
+  const getUserInitial = (name: string) => {
+    return name ? name.charAt(0).toUpperCase() : 'U';
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
-        keyboardVerticalOffset={90}
+        style={styles.keyboardAvoidingContainer}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
+        <View style={styles.header}>
+          <View style={styles.userHeader}>
+            <View style={styles.userCircle}>
+              <Text style={styles.userInitial}>{getUserInitial(userName)}</Text>
+            </View>
+            <Text style={styles.userName}>{userName}, User</Text>
+          </View>
+
+          <Text style={styles.analysisTitle}>Résultat de l'analyse</Text>
+
+          <View style={styles.diagnosticContainer}>
+            <Text style={styles.diagnosticLabel}>Diagnostic:</Text>
+            <Text style={styles.diagnosticText}>{diagnosticResult || 'Chargement...'}</Text>
+          </View>
+        </View>
+
+        <View style={styles.agribotSection}>
+          <View style={styles.agribotInfo}>
+            <Ionicons name="leaf-outline" size={30} color={Colors.light.tint} style={styles.agribotIcon} />
+            <View>
+              <Text style={styles.agribotTitle}>Agribot</Text>
+              <Text style={styles.agribotDescription}>Bot traitant de problème de maladie de culture agricole</Text>
+            </View>
+          </View>
+        </View>
+
         <FlatList
           ref={flatListRef}
           data={messages}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={[styles.messageBubble, item.sender === 'user' ? styles.userBubble : styles.botBubble]}>
+              {item.sender === 'bot' && (
+                <Ionicons name="chatbubble-outline" size={16} color={item.sender === 'user' ? 'white' : Colors.light.icon} style={styles.messageIcon} />
+              )}
               <Text style={item.sender === 'user' ? styles.userText : styles.botText}>{item.text}</Text>
             </View>
           )}
@@ -153,50 +197,222 @@ export default function YBotScreen() {
             style={styles.input}
             value={input}
             onChangeText={setInput}
-            placeholder="Écrivez votre message..."
+            placeholder="Entrez votre requête..."
             placeholderTextColor="#999"
           />
           <TouchableOpacity style={styles.sendButton} onPress={handleSend} disabled={isLoading}>
             <Ionicons name="send" size={24} color="white" />
           </TouchableOpacity>
         </View>
+
+        <View style={styles.bottomNav}>
+          <TouchableOpacity style={styles.navItem} onPress={() => router.replace('/(tabs)/(home)')}>
+            <Ionicons name="home-outline" size={24} color="black" />
+            <Text style={styles.navText}>Accueil</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem} onPress={() => router.replace('/(tabs)/(scan)')}>
+            <Ionicons name="stats-chart-outline" size={24} color="black" />
+            <Text style={styles.navText}>Analyse</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem} onPress={() => router.replace('/(tabs)/(y-bot)')}>
+            <Ionicons name="chatbubbles-outline" size={24} color={Colors.light.tint} />
+            <Text style={[styles.navText, { color: Colors.light.tint }]}>Chat</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem} onPress={() => router.replace('/(tabs)/(z-profil)')}>
+            <Ionicons name="person-outline" size={24} color="black" />
+            <Text style={styles.navText}>Profil</Text>
+          </TouchableOpacity>
+        </View>
+
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-// --- STYLES ---
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0f0f0' },
-  messagesContainer: { padding: 10, paddingBottom: 20 },
-  messageBubble: { padding: 12, borderRadius: 20, marginBottom: 10, maxWidth: '80%' },
-  userBubble: { backgroundColor: Colors.light.tint, alignSelf: 'flex-end' },
-  botBubble: { backgroundColor: 'white', alignSelf: 'flex-start' },
-  userText: { color: 'white' },
-  botText: { color: 'black' },
-  loadingIndicator: { marginVertical: 10 },
+  container: {
+    flex: 1,
+    backgroundColor: '#f0f0f0',
+  },
+  keyboardAvoidingContainer: {
+    flex: 1,
+  },
+  header: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+    marginBottom: 15,
+  },
+  userHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  userCircle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#E1E1E1',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  userInitial: {
+    fontWeight: 'bold',
+    color: '#000',
+    fontSize: 24,
+  },
+  userName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  analysisTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#000',
+  },
+  diagnosticContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  diagnosticLabel: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#555',
+    marginRight: 10,
+  },
+  diagnosticText: {
+    fontSize: 18,
+    color: Colors.light.tint,
+    fontWeight: '600',
+  },
+  agribotSection: {
+    backgroundColor: 'white',
+    borderRadius: 15,
+    marginHorizontal: 20,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+    marginBottom: 20,
+  },
+  agribotInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  agribotIcon: {
+    marginRight: 10,
+  },
+  agribotTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  agribotDescription: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+  },
+  messagesContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    flexGrow: 1,
+  },
+  messageBubble: {
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    marginBottom: 10,
+    maxWidth: '85%',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  userBubble: {
+    backgroundColor: Colors.light.tint,
+    alignSelf: 'flex-end',
+    borderBottomRightRadius: 5,
+  },
+  botBubble: {
+    backgroundColor: 'white',
+    alignSelf: 'flex-start',
+    borderBottomLeftRadius: 5,
+  },
+  userText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  botText: {
+    color: '#333',
+    fontSize: 16,
+    flexShrink: 1,
+  },
+  messageIcon: {
+    marginRight: 8,
+    marginTop: 2,
+  },
+  loadingIndicator: {
+    marginVertical: 10,
+    alignSelf: 'center',
+  },
   inputContainer: {
     flexDirection: 'row',
-    padding: 10,
+    padding: 15,
     borderTopWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#eee',
     backgroundColor: 'white',
+    alignItems: 'center',
   },
   input: {
     flex: 1,
-    height: 40,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 20,
-    paddingHorizontal: 15,
+    minHeight: 45,
+    backgroundColor: '#f0f4f7',
+    borderRadius: 25,
+    paddingHorizontal: 18,
     marginRight: 10,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: Colors.light.tint,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  bottomNav: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderColor: '#eee',
+    backgroundColor: 'white',
+    paddingBottom: Platform.OS === 'ios' ? 20 : 0,
+  },
+  navItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  navText: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
   },
 });

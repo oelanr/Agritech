@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework import status
+from .serializers import UserSerializer
 
 # Register
 class RegisterView(APIView):
@@ -42,5 +43,13 @@ class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        return Response({"username": request.user.username})
+        user = request.user
+        serializer = UserSerializer(user)
+        user_data = serializer.data
+        
+        initial = user.username[0].upper() if user.username else ''
+        
+        user_data['initial'] = initial
+        
+        return Response(user_data)
 
