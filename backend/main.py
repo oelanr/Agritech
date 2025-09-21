@@ -59,20 +59,22 @@ def startup_event():
 
 # Modèle Pydantic pour classification 
 class SymptomesInput(BaseModel):
-    taches: bool
-    feuille_jaune: bool
-    taches_circulaires: bool
-    bord_feuille_brun: bool
-    fletrissure: bool
-    presence_champignons: bool
+    couleur_feuillage: str
+    dessechement_feuilles: int
+    taches_foliaires: str
+    taille_taches: str
+    halo_autour_taches: int
+    stries: int
+    enroulement_feuilles: int
+    sterilite: int
+    cassure_tige: int
+    taches_sur_graines: int
+    taille_plant: str
+    tallage: str
     humidite: str
-    luminosite: str
-    vent: str
-    pluie_recente: bool
-    stade_croissance: str
-    fertilisation_recente: bool
-    type_sol: str
     irrigation: str
+    semences_infectees: int
+    saison: str
 
 #Endpoint classification
 @app.post("/predict")
@@ -157,3 +159,5 @@ def predict_and_chat(input_data: SymptomesInput):
 @app.get("/")
 def root():
     return {"message": "Agrichat API is running 🚀"}
+
+

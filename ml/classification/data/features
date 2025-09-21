@@ -1,0 +1,18 @@
+| Feature               | Valeurs possibles / exemples                                                                                              | Type         |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| couleur_feuillage     | jaune vert pâle, presque blanche, gris, blanc-gris, jaune panaché, blanc, orange, vert pâle, vert clair, jaune pâle, vert | Catégorielle |
+| dessèchement_feuilles | 0, 1                                                                                                                      | Binaire      |
+| taches_foliaires      | aucune, rondes, elliptiques, fusiformes, stries, coleoptiles, ovales, allongées                                           | Catégorielle |
+| taille_taches         | aucune, petite, moyenne, grande                                                                                           | Catégorielle |
+| halo_autour_taches    | 0, 1                                                                                                                      | Binaire      |
+| stries                | 0, 1                                                                                                                      | Binaire      |
+| enroulement_feuilles  | 0, 1                                                                                                                      | Binaire      |
+| stérilité             | 0, 1                                                                                                                      | Binaire      |
+| cassure_tige          | 0, 1                                                                                                                      | Binaire      |
+| taches_sur_graines    | 0, 1                                                                                                                      | Binaire      |
+| taille_plant          | rabougri, normal, grand, très grand                                                                                       | Catégorielle |
+| tallage               | réduit, normal                                                                                                            | Catégorielle |
+| humidite              | basse, moyenne, haute, humide                                                                                             | Catégorielle |
+| irrigation            | pluvial, irrigué, sol sec                                                                                                 | Catégorielle |
+| semences_infectées    | 0, 1                                                                                                                      | Binaire      |
+| saison                | chaude, fraîche, froide, toutes                                                                                           | Catégorielle |

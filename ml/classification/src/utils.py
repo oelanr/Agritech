@@ -13,7 +13,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..', '..', '..'))
 
 DATA_PATH = os.path.join(BASE_DIR, '..', 'data', 'dataset.csv')
-MODEL_PATH = os.path.join(PROJECT_ROOT, 'models', 'modele_arbre2.joblib')
+MODEL_PATH = os.path.join(PROJECT_ROOT, 'models', 'model.joblib')
+
 def entropie(exemples):
     total = len(exemples)
     if total == 0:
@@ -123,7 +124,6 @@ def afficher_arbre_graphviz(arbre: NoeudArbre, filename="arbre_decision"):
     dot.render(filename, view=True)
 
 def train_model():
-    print("--- Début de l'entraînement ---")
     
     try:
         df = pd.read_csv(DATA_PATH)
@@ -135,18 +135,12 @@ def train_model():
     data = df.to_dict(orient='records')
     
     features = [col for col in df.columns if col != 'maladie']
-    print(f"Features utilisées pour l'entraînement: {features}")
-
-    print("Construction de l'arbre de décision...")
     arbre = construire_arbre_id3(data, features)
     
     # Affichage avec graphviz (image claire et hiérarchique)
     afficher_arbre_graphviz(arbre, filename="arbre_resultat")
     
-    print(f"Sauvegarde du modèle dans '{MODEL_PATH}'...")
     joblib.dump(arbre, MODEL_PATH)
     
-    print("--- Entraînement terminé avec succès! ---")
-
 if __name__ == "__main__":
     train_model()
