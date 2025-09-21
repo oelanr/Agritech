@@ -4,6 +4,8 @@ import math
 from collections import Counter
 from arbre import NoeudArbre
 import os
+from graphviz import Digraph
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -91,6 +93,35 @@ def construire_arbre_id3(data, features):
     
     return racine
 
+def afficher_arbre_graphviz(arbre: NoeudArbre, filename="arbre_decision"):
+    dot = Digraph(comment="Arbre de Décision", format="png")
+    dot.attr("node", shape="box", style="filled", color="lightblue2", fontname="Helvetica")
+
+    def ajouter_noeud(noeud: NoeudArbre, parent_id=None, valeur=None):
+        node_id = str(id(noeud))
+
+        # Texte du noeud
+        if noeud.classe is not None:
+            etiquette = f"classe: {noeud.classe}"
+            dot.node(node_id, etiquette, color="lightgreen")
+        else:
+            etiquette = noeud.feature
+            dot.node(node_id, etiquette)
+
+        # Relier au parent
+        if parent_id is not None:
+            if valeur is not None:
+                dot.edge(parent_id, node_id, label=str(valeur))
+            else:
+                dot.edge(parent_id, node_id)
+
+        for val, enfant in noeud.enfants.items():
+            ajouter_noeud(enfant, node_id, val)
+
+    ajouter_noeud(arbre)
+
+    dot.render(filename, view=True)
+
 def train_model():
     print("--- Début de l'entraînement ---")
     
@@ -108,6 +139,9 @@ def train_model():
 
     print("Construction de l'arbre de décision...")
     arbre = construire_arbre_id3(data, features)
+    
+    # Affichage avec graphviz (image claire et hiérarchique)
+    afficher_arbre_graphviz(arbre, filename="arbre_resultat")
     
     print(f"Sauvegarde du modèle dans '{MODEL_PATH}'...")
     joblib.dump(arbre, MODEL_PATH)
