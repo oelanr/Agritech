@@ -40,7 +40,7 @@ app.add_middleware(
 )
 
 #ariables globales
-MODEL_PATH = os.path.join(BASE_DIR, '..', 'models', 'modele_arbre2.joblib')
+MODEL_PATH = os.path.join(BASE_DIR, '..', 'models', 'model.joblib')
 arbre = None
 chat_graph = None
 
