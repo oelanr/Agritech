@@ -7,122 +7,117 @@ from tools import retrieve
 from config import llm
 from langgraph.checkpoint.memory import MemorySaver
 
-# Fonctions de routage et de génération
-
-def route_message(state: MessagesState) -> Literal["technical_route", "symptom_route", "simple_route", "off_topic_route", "post_prediction_route"]:
+# --- ROUTAGE DES MESSAGES ---
+def route_message(state: MessagesState) -> Literal[
+    "technical_route", "symptom_route", "simple_route", "off_topic_route", "post_prediction_route"
+]:
     """
-    Décide quelle route prendre en fonction du contenu du message.
+    Décide quelle route prendre selon le contenu du dernier message utilisateur.
     """
     last_message = state["messages"][-1]
     if not isinstance(last_message, HumanMessage) or not last_message.content.strip():
-        return "simple_route" # Gère les messages vides ou non-humains
+        return "simple_route"
 
-    if last_message.content.startswith("La maladie détectée est"):
+    content = last_message.content.strip()
+
+    # Cas direct "post-prediction"
+    if content.startswith("La maladie détectée est"):
         print("--- ROUTE: POST-PRÉDICTION ---")
         return "post_prediction_route"
 
-    prompt = f"""Vous êtes un routeur de messages expert et très strict. Votre tâche est de classifier la question de l'utilisateur en quatre catégories : 'technical_rice', 'symptom_check', 'simple' ou 'off_topic'.
+    # Classification par le LLM
+    classification_prompt = f"""
+Vous êtes un classificateur expert. Classez la question de l'utilisateur
+en UNE SEULE de ces catégories (réponse uniquement par le mot exact) :
 
-- **'technical_rice'**: La question est une question technique générale sur la culture du riz, mais ne décrit pas de symptômes spécifiques sur une plante. Exemples : "Qu'est-ce que le système de riziculture intensive (SRI) ?", "Comment fertiliser mon riz ?", "Quelle est la meilleure période pour semer le riz ?".
+- technical_rice : question technique sur la culture du riz.
+- symptom_check : description de symptômes de plants de riz.
+- simple : salutation / politesse / conversation basique.
+- off_topic : sujet non lié au riz.
 
-- **'symptom_check'**: La question décrit des symptômes observés sur une plante de riz. L'utilisateur mentionne des problèmes visuels ou de croissance. Exemples : "Mes plants de riz ont des feuilles jaunes.", "J'ai remarqué des taches brunes sur les feuilles.", "Mon riz semble malade.", "Pourquoi les tiges de mon riz sont-elles faibles ?".
-
-- **'simple'**: La question est une salutation, un remerciement ou une amabilité conversationnelle. Exemples : 'bonjour', 'merci', 'ça va ?'.
-
-- **'off_topic'**: La question concerne **TOUT AUTRE SUJET** qui n'est pas lié à la culture du riz. Exemples : "Comment cultiver des tomates ?", "Écris une fonction en Python", "Quelle est la recette de la ratatouille ?".
-
-Analysez la question de l'utilisateur ci-dessous et ne retournez que le nom de la catégorie ('technical_rice', 'symptom_check', 'simple', ou 'off_topic') et rien d'autre.
-
-Question de l'utilisateur : "{last_message.content}"
+Question : "{content}"
 """
-    response = llm.invoke(prompt)
-    cleaned_response = response.content.strip().lower()
+    category = llm.invoke(classification_prompt).content.strip().lower()
 
-    if "symptom_check" in cleaned_response:
-        print("--- ROUTE: VÉRIFICATION DE SYMPTÔMES ---")
+    if "symptom_check" in category:
+        print("--- ROUTE: SYMPTÔMES ---")
         return "symptom_route"
-    elif "technical_rice" in cleaned_response:
+    elif "technical_rice" in category:
         print("--- ROUTE: TECHNIQUE RIZ ---")
         return "technical_route"
-    elif "off_topic" in cleaned_response:
-        print("--- ROUTE: HORS-SUJET ---")
+    elif "off_topic" in category:
+        print("--- ROUTE: HORS SUJET ---")
         return "off_topic_route"
     else:
         print("--- ROUTE: SIMPLE ---")
         return "simple_route"
 
+# --- GÉNÉRATION DES RÉPONSES ---
 def generate_simple_response(state: MessagesState):
-    """
-    Génère une réponse directe et polie pour les messages conversationnels simples.
-    """
+    """Réponse courte et polie pour les messages simples."""
     last_message = state["messages"][-1]
-    prompt = f"""Vous êtes un assistant amical et serviable, spécialiste de la culture du riz. L'utilisateur a envoyé un message conversationnel simple.
-Répondez poliment et brièvement.
-
-Message de l'utilisateur : "{last_message.content}"
-Votre réponse:"""
-    response = llm.invoke(prompt)
+    response = llm.invoke(f"""
+Vous êtes un conseiller amical spécialisé dans le riz.
+Répondez poliment et brièvement à :
+"{last_message.content}"
+""")
     return {"messages": [response]}
 
 def generate_symptom_response(state: MessagesState):
-    """
-    Génère une réponse invitant à utiliser l'outil de diagnostic.
-    """
-    response_text = "Il semble que vous décriviez des symptômes sur vos plants de riz. Pour vous aider au mieux, je vous invite à utiliser l'outil de diagnostic. Cela me permettra de vous fournir une identification plus précise de la maladie."
-    return {"messages": [AIMessage(content=response_text)]}
+    """Invite l’utilisateur à utiliser l’outil diagnostic."""
+    text = (
+        "Vous semblez décrire des symptômes sur vos plants de riz. "
+        "Pour un diagnostic précis, veuillez utiliser l’outil de diagnostic."
+    )
+    return {"messages": [AIMessage(content=text)]}
 
 def generate_off_topic_response(state: MessagesState):
-    """
-    Retourne une réponse pré-écrite pour les questions hors-sujet.
-    """
-    response_text = "Je suis désolé, mais ma spécialité est la culture du riz. Je ne peux pas répondre aux questions qui sortent de ce domaine. Comment puis-je vous aider avec votre riziculture aujourd'hui ?"
-    return {"messages": [AIMessage(content=response_text)]}
+    """Réponse pré-écrite pour hors sujet."""
+    text = (
+        "Je suis désolé, mais je suis spécialisé dans la culture du riz. "
+        "Comment puis-je vous aider avec votre riziculture aujourd'hui ?"
+    )
+    return {"messages": [AIMessage(content=text)]}
 
 def query_or_respond(state: MessagesState):
-    """
-    Prépare le LLM avec les outils pour les requêtes techniques.
-    """
+    """Prépare le LLM avec les outils pour les requêtes techniques/post-prédiction."""
     llm_with_tools = llm.bind_tools([retrieve])
-    response = llm_with_tools.invoke(state["messages"])
-    return {"messages": [response]}
+    return {"messages": [llm_with_tools.invoke(state["messages"])]}
 
 def generate_technical_response(state: MessagesState):
-    """
-    Génère la réponse finale pour une requête technique en utilisant le contexte des outils.
-    """
-    recent_tool_messages = [m for m in reversed(state["messages"]) if m.type == "tool"]
-    tool_messages = recent_tool_messages[::-1]
-
-    docs_content = "\n\n".join(doc.content for doc in tool_messages)
-    system_message_content = (
-        "Tu es un conseiller expert en riziculture. Ton objectif est de fournir des conseils clairs, précis et pratiques sur tous les aspects de la culture du riz.\n\n"
-        "**Instructions de Comportement :**\n"
-        "1.  **Si la question est une demande de diagnostic d'une maladie du riz suite à une prédiction** (par exemple, si elle contient 'La maladie détectée est...'), adopte un ton d'expert en phytopathologie du riz et structure ta réponse comme suit :\n"
-        "    - **Clause de non-responsabilité :** 'Veuillez noter que ce diagnostic est une estimation...'\n"
-        "    - **Diagnostic probable :** [Nom de la maladie du riz]\n"
-        "    - **Facteurs de risque :** [Conditions favorisant la maladie]\n"
-        "    - **Actions correctives :** [Mesures immédiates pour le riz]\n"
-        "    - **Stratégies de prévention :** [Conseils à long terme pour la riziculture]\n"
-        "2.  **Pour toute autre question technique sur la culture du riz**, fournis une réponse complète, bien structurée et facile à comprendre. Utilise le formatage Markdown (listes, gras) pour améliorer la lisibilité.\n"
-        "3.  **Base tes réponses en priorité sur le contexte fourni.** Si le contexte est insuffisant, utilise tes connaissances générales sur le riz avec prudence.\n\n"
-        "Contexte fourni:\n"
-        f"{docs_content}"
+    """Réponse finale pour une requête technique (avec contexte des outils)."""
+    # On récupère le contenu des messages tools
+    docs_content = "\n\n".join(
+        m.content for m in state["messages"] if getattr(m, "type", None) == "tool"
     )
 
+    system_message_content = (
+        "Tu es un conseiller expert en riziculture. Donne des conseils clairs et pratiques.\n\n"
+        "Instructions :\n"
+        "1. Si la question contient 'La maladie détectée est', adopte un ton d'expert en phytopathologie et structure ainsi :\n"
+        "    - Clause de non-responsabilité\n"
+        "    - Diagnostic probable\n"
+        "    - Facteurs de risque\n"
+        "    - Actions correctives\n"
+        "    - Stratégies de prévention\n"
+        "2. Sinon, donne une réponse complète et claire sur la culture du riz.\n"
+        "3. Utilise Markdown pour améliorer la lisibilité.\n\n"
+        f"Contexte fourni :\n{docs_content}"
+    )
+
+    # Filtrer messages (human + system + AI sans tool_calls)
     conversation_messages = [
-        message for message in state["messages"]
-        if message.type in ("human", "system") or (message.type == "ai" and not message.tool_calls)
+        m for m in state["messages"]
+        if getattr(m, "type", None) in ("human", "system") or (getattr(m, "type", None) == "ai" and not getattr(m, "tool_calls", None))
     ]
     prompt = [SystemMessage(system_message_content)] + conversation_messages
     response = llm.invoke(prompt)
     return {"messages": [response]}
 
-# Construction du Graphe
-
+# --- CONSTRUCTION DU GRAPHE ---
 def build_rag_graph():
     graph_builder = StateGraph(MessagesState)
 
-    # Ajout des nœuds
     graph_builder.add_node("simple_response_generator", generate_simple_response)
     graph_builder.add_node("symptom_response_generator", generate_symptom_response)
     graph_builder.add_node("off_topic_response_generator", generate_off_topic_response)
@@ -130,7 +125,6 @@ def build_rag_graph():
     graph_builder.add_node("tools", ToolNode([retrieve]))
     graph_builder.add_node("generate_technical_response", generate_technical_response)
 
-    # Le point d'entrée maintenant conditionnel
     graph_builder.set_conditional_entry_point(
         route_message,
         {
@@ -142,17 +136,14 @@ def build_rag_graph():
         },
     )
 
-    # Arêtes pour les chemins
     graph_builder.add_edge("simple_response_generator", END)
     graph_builder.add_edge("symptom_response_generator", END)
     graph_builder.add_edge("off_topic_response_generator", END)
 
-    # Arêtes pour le chemin technique
     graph_builder.add_conditional_edges(
         "query_or_respond", tools_condition, {END: END, "tools": "tools"}
     )
     graph_builder.add_edge("tools", "generate_technical_response")
     graph_builder.add_edge("generate_technical_response", END)
 
-    memory = MemorySaver()
-    return graph_builder.compile(checkpointer=memory)
+    return graph_builder.compile(checkpointer=MemorySaver())
