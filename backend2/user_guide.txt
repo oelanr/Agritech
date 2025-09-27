@@ -1,0 +1,51 @@
+Supposons on est sur localhost zany , sur le port 8000 ny backend
+donc on run : uvicorn app:main --reload --port 8000
+
+Pour l'appel de l'api vers le modèle on met --port --8001
+pour éviter le conflit entre le server backend
+
+-- JE VOUS CONSEILLE DE CREER UN AUTRE .venv dans backend2 SINON ça donne une
+erreur 500 password cannot exceed 72 bytes ,
+dont moi même je ne comprends pas  --
+donc il faut activer le .venv propre au backend2 pour lancer le server
+(Je parle de Agritech/backend2/.venv) pas le .venv global du projet
+
+http://127.0.0.1:8000/ ny base url backend (localhost au port 8000)
+
+Voici les routes
+
+1 - Création de compte : http://127.0.0.1:8000//users/signup
+
+2 - login : http://127.0.0.1:8000//users/signup
+
+ITY NY REQUEST BODY POUR LES 2 : (HTTP_VERB , POST daholo)
+    {
+      "email": "userX@example.com" -- mail unique
+      "password": "12345678" -- min length 6
+    }
+
+3 - Save scan (enregistrement des scans) :
+
+Comme convenu avec Bryan c'est le frontrend qui se charge d'appeler directement le modèle,
+Il faut faire 2 appels d'api : en premier le modèle , en 2e mon api pour sauvegarder
+
+const prediction = await fetch("http://127.0.0.1:8000/predict", {
+    // Là vous appelez le modèle d'Olane avec son API Sur le port 8001
+}).then(res => res.json());
+
+Ensuite,  vous appelez mon API pour saver l’historique
+
+await fetch("http://127.0.0.1:8000/scan/save", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer " + userToken
+  },
+  body: JSON.stringify({
+    ...symptoms,
+    prediction: prediction.result
+  })
+});
+
+4- Liste des scans per user : http://127.0.0.1:8000/scan/history/{user_id}
+ -- GET ny method --
