@@ -15,7 +15,7 @@ const LogoScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../../assets/images/ispm.png')} style={styles.logo} />
+      
     </View>
   );
 };

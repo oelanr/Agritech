@@ -1,189 +1,166 @@
-import { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, Image, Dimensions, TouchableOpacity, Text } from 'react-native';
+import { useFonts, SpaceGrotesk_400Regular, SpaceGrotesk_500Medium, SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
+import { useRouter } from 'expo-router';
+
+const { width, height } = Dimensions.get('window');
+
+
+const AppText = ({ style, children, weight = '400', ...props }) => {
+  let fontFamily = 'SpaceGrotesk_400Regular';
+  if (weight === '500') fontFamily = 'SpaceGrotesk_500Medium';
+  if (weight === '700') fontFamily = 'SpaceGrotesk_700Bold';
+
+  return <Text style={[{ fontFamily }, style]} {...props}>{children}</Text>;
+};
 
 export default function HomeScreen() {
-  const [selectedCard, setSelectedCard] = useState(null);
+  const [fontsLoaded] = useFonts({
+    SpaceGrotesk_400Regular,
+    SpaceGrotesk_500Medium,
+    SpaceGrotesk_700Bold,
+  });
 
-  const handleCardPress = (index) => {
-    setSelectedCard(index === selectedCard ? null : index);
-  };
-
-  const cards = [
-    {
-      time: '1h',
-      title: 'Rouille brune du blé',
-      description: 'Présence de nombreuses tâches brun orangé sur les feuilles',
-    },
-    {
-      time: '1j',
-      title: 'Mildiou de la pomme de terre',
-      description: 'Tâche sombre sur les feuilles de maïs et pourriture des tubercules',
-    },
-    {
-      time: '5j',
-      title: 'Rouille brune du blé',
-      description: 'Présence de nombreuses tâches brun orangé sur les feuilles',
-    },
-    {
-      time: '6j',
-      title: 'Tache bactérienne de la tomate',
-      description: 'Petites taches brunes entourées de jaune sur les feuilles',
-    },
-  ];
+  const router = useRouter();
+  if (!fontsLoaded) return null;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
-      <Text style={styles.text}>Dernière analyse</Text>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={{ paddingBottom: height * 0.15 }}>
 
-      <View style={styles.card}>
-        <Text style={styles.title}>Infection par mildiou</Text>
+        {/* SECTION PRINCIPALE */}
+        <View style={styles.mainSection}>
+          <AppText style={styles.mainTitle} weight="700">
+            Préserver le riz,{"\n"}protéger la vie
+          </AppText>
 
-        <View style={styles.infoRow}>
-          <View style={styles.infoBlock}>
-            <Text style={styles.label}>Sujet</Text>
-            <Text style={styles.value}>Tomates</Text>
+          <View style={{ alignItems: 'center', marginVertical: height * 0.02 }}>
+            <AppText style={styles.subtitleTop}>Appuyez sur le bouton pour démarrer l’analyse</AppText>
+            <AppText style={styles.subtitleBottom}>de vos cultures</AppText>
           </View>
 
-          <View style={styles.infoBlock}>
-            <Text style={styles.label}>Date d’analyse</Text>
-            <Text style={styles.value}>18/07/25</Text>
-          </View>
+          <TouchableOpacity style={styles.mainButton}>
+            <AppText style={styles.mainButtonText} weight="500">Consultez maintenant</AppText>
+            <Image 
+              source={require('../../../assets/images/arrow.png')} 
+              style={{ width: width * 0.08, height: width * 0.08, marginLeft: width * 0.015 }} 
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.push('/historique')}>
+            <AppText style={styles.historyText}>Voir vos historique de diagnostics</AppText>
+          </TouchableOpacity>
+
         </View>
 
-        <View style={styles.infoRow}>
-          <View style={styles.infoBlock}>
-            <Text style={styles.label}>ID</Text>
-            <Text style={styles.value}>78456</Text>
-          </View>
-
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Voir le traitement</Text>
+        {/* SECTION ANALYSES */}
+        <View style={styles.analysisHeader}>
+          <AppText style={styles.sectionTitle} weight="700">Dernières analyses</AppText>
+          <TouchableOpacity onPress={() => router.push('/historique')}>
+            <AppText style={styles.viewAll} weight="700">Voir tous</AppText>
           </TouchableOpacity>
         </View>
-      </View>
 
-      <Text style={styles.text}>Liste de toutes les analyses</Text>
-
-      {cards.map((item, index) => {
-        const isSelected = selectedCard === index;
-        return (
-          <View style={styles.cardRow} key={index}>
-            <Text style={styles.timestamp}>{item.time}</Text>
-            <TouchableOpacity
-              style={[styles.grayCard, isSelected && styles.grayCardSelected]}
-              onPress={() => handleCardPress(index)}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.cardTitle, isSelected && styles.whiteText]}>
-                {item.title}
-              </Text>
-              <Text style={[styles.cardDescription, isSelected && styles.whiteText]}>
-                {item.description}
-              </Text>
-            </TouchableOpacity>
+        {/* CARTES */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <View style={styles.first}>
+              <View style={styles.iconContainer}>
+                <Image source={require('../../../assets/images/droplet.png')} style={styles.cardIcon} />
+              </View>
+              <View>
+                <AppText style={styles.cardTitle} weight="700">Pyriculariose du riz</AppText>
+                <AppText style={styles.cardType} weight="500">Fongique</AppText>
+              </View>
+            </View>
+            <View style={[styles.statusTag, { backgroundColor: '#CC402D33' }]}>
+              <AppText style={[styles.statusText, { color: '#CC402D' }]} weight="700">Élevée</AppText>
+            </View>
           </View>
-        );
-      })}
-    </ScrollView>
+
+          <AppText style={styles.cardDesc}>
+            Maladie fongique causée par Pyricularia oryzae affectant les feuilles et les épis.
+          </AppText>
+
+          <AppText style={styles.symptomTitle} weight="700">Symptômes principaux :</AppText>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 5 }}>
+            <View style={styles.symptomRow}>
+              <View style={styles.symptomTag}><AppText style={styles.symptomText} weight="500">Tâches brunes</AppText></View>
+              <View style={styles.symptomTag}><AppText style={styles.symptomText} weight="500">Flétrissement</AppText></View>
+              <View style={styles.symptomTag}><AppText style={styles.symptomText} weight="500">Tâches foliaires</AppText></View>
+            </View>
+          </ScrollView>
+        </View>
+
+         {/* CARTES */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <View style={styles.first}>
+              <View style={styles.iconContainer}>
+                <Image source={require('../../../assets/images/fire.png')} style={styles.cardIcon} />
+              </View>
+              <View>
+                <AppText style={styles.cardTitle} weight="700">Pyriculariose du riz</AppText>
+                <AppText style={styles.cardType} weight="500">Fongique</AppText>
+              </View>
+            </View>
+            <View style={[styles.statusTag, { backgroundColor: 'rgba(223, 129, 66, 0.2)' }]}>
+              <AppText style={[styles.statusText, { color: '#DF8142' }]} weight="700">Moyen</AppText>
+            </View>
+          </View>
+
+          <AppText style={styles.cardDesc}>
+            Maladie fongique causée par Pyricularia oryzae affectant les feuilles et les épis.
+          </AppText>
+
+          <AppText style={styles.symptomTitle} weight="700">Symptômes principaux :</AppText>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 5 }}>
+            <View style={styles.symptomRow}>
+              <View style={styles.symptomTag}><AppText style={styles.symptomText} weight="500">Tâches brunes</AppText></View>
+              <View style={styles.symptomTag}><AppText style={styles.symptomText} weight="500">Flétrissement</AppText></View>
+              <View style={styles.symptomTag}><AppText style={styles.symptomText} weight="500">Tâches foliaires</AppText></View>
+            </View>
+          </ScrollView>
+        </View>
+        
+      </ScrollView>
+    </View>
+    
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
+  container: { flex: 1, backgroundColor: '#FBFBFB' },
+  mainSection: {
+    alignItems: 'center',
+    paddingHorizontal: width * 0.06,
+    marginTop: height * 0.03,
   },
-  text: {
-    marginHorizontal: 30,
-    marginTop: 25,
-    fontSize: 23,
-    fontWeight: 'bold',
+  mainTitle: { fontSize: width * 0.075, color: '#111', textAlign: 'center', marginBottom: height * 0.02 },
+  subtitleTop: { fontSize: width * 0.038,  textAlign: 'center' },
+  subtitleBottom: { fontSize: width * 0.038, textAlign: 'center', marginTop: 2 },
+  mainButton: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#212121',
+    borderRadius: 30, paddingVertical: height * 0.012, paddingHorizontal: width * 0.05,
+    shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 3, elevation: 3, marginBottom: height * 0.03,
   },
-  card: {
-    backgroundColor: '#255C50',
-    borderRadius: 30,
-    paddingHorizontal:30,
-    paddingVertical:20,
-    margin: 30,
-    marginBottom:5,
-    elevation: 3,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#FFF',
-    marginBottom: 25,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  infoBlock: {
-    flex: 1,
-  },
-  label: {
-    fontSize: 17,
-    color: '#FFF',
-    marginBottom: 4,
-    fontWeight: 'bold'
-  },
-  value: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#D9D9D9',
-  },
-  button: {
-    backgroundColor: '#261E1E',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    alignSelf: 'flex-end',
-    justifyContent: 'center',
-    marginRight: 2,
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: '700',
-  },
-  cardRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginTop: 16,
-    marginHorizontal: 20,
-  },
-  timestamp: {
-    fontSize: 15,
-    color: 'black',
-    width: 35,
-    marginLeft: 10,
-    marginRight: 5,
-    marginTop: 40,
-  },
-  grayCard: {
-    flex: 1,
-    backgroundColor: '#EFEFEF',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#D3D3D3',
-    padding: 16,
-    marginRight: 10,
-  },
-  grayCardSelected: {
-    backgroundColor: '#261E1E',
-    borderColor: '#252625',
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 6,
-    color: '#222',
-  },
-  cardDescription: {
-    fontSize: 14,
-    color: 'black',
-  },
-  whiteText: {
-    color: '#fff',
-  },
+  mainButtonText: { color: '#fff', fontSize: width * 0.04 },
+  historyText: { fontSize: width * 0.042, borderBottomWidth: 1, borderBottomColor: '#111', paddingBottom: 2, marginTop: 8 },
+  analysisHeader: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: width * 0.05, marginTop: height * 0.03, marginBottom: height * 0.02 },
+  sectionTitle: { fontSize: width * 0.05 },
+  viewAll: { fontSize: width * 0.045 },
+  card: { backgroundColor: '#F2F4F8', borderRadius: 15, marginHorizontal: width * 0.05, marginVertical: height * 0.01, padding: width * 0.04, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 },
+  iconContainer: { backgroundColor: 'white', padding: width * 0.015, borderRadius: 6 },
+  cardIcon: { width: width * 0.06, height: width * 0.06 },
+  cardTitle: { fontSize: width * 0.042, color: '#111', flex: 1 },
+  cardType: { color: '#353535CC', marginBottom: 4 },
+  statusTag: { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, alignSelf: 'flex-start' },
+  statusText: { fontSize: width * 0.035 },
+  cardDesc: { color: '#353535CC', marginBottom: 8 },
+  symptomTitle: { color: '#222', fontSize: width * 0.04 },
+  symptomRow: { flexDirection: 'row', gap: 6 },
+  symptomTag: { backgroundColor: '#CEE2EC', borderRadius: 10, paddingVertical: 4, paddingHorizontal: 10 },
+  symptomText: { color: '#2E81A8', fontSize: width * 0.03 },
+  first: { flexDirection: 'row', alignItems: 'center', gap: width * 0.02 },
 });
