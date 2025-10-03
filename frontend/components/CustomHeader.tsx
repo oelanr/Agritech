@@ -1,63 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { View, Text, StyleSheet } from 'react-native';
+import { 
+  useFonts, 
+  SpaceGrotesk_400Regular, // Poids Regular
+  SpaceGrotesk_700Bold      // Poids Bold 
+} from '@expo-google-fonts/space-grotesk';
+import { SafeAreaView } from 'react-native-safe-area-context';
 export default function CustomHeader() {
-  const [username, setUsername] = useState<string | null>(null);
-  const [initial, setInitial] = useState<string>('U');
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const storedUsername = await AsyncStorage.getItem('username');
-        if (storedUsername !== null) {
-          setUsername(storedUsername);
-          setInitial(storedUsername.charAt(0).toUpperCase());
-        }
-      } catch (error) {
-        console.error("Erreur lors de la récupération du nom d'utilisateur dans CustomHeader :", error);
-      }
-    };
-
-    fetchUserData();
-  }, []);
+  const [fontsLoaded] = useFonts({
+    'SpaceGrotesk-Regular': SpaceGrotesk_400Regular,
+    'SpaceGrotesk-Bold': SpaceGrotesk_700Bold,
+  });
 
   return (
-    <View style={styles.container}>
-      <View style={styles.iconWrapper}>
-        <Text style={styles.initial}>{initial}</Text>
+    <SafeAreaView style={styles.safeContainer}>
+      <View style={styles.container}>
+          <Text style={styles.title}>Agritech</Text>
+          <View style={styles.profile}>
+              <Text style={styles.nickname}>BR</Text>
+          </View>
       </View>
-      <Text style={styles.text}>Salanitra, {username || 'Utilisateur'}</Text>
-    </View>
+    </SafeAreaView>
+    
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+    safeContainer: {
+        backgroundColor: '#FFFFFF',
+    },
+    container: {
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'space-between', 
+      alignItems: 'center',
+      paddingHorizontal: 20, 
+    },
+  title: {
+    fontSize: 32,
+    color: "#212121",
+    fontFamily: "SpaceGrotesk-Bold"
+  },
+  profile: {
+    height: 50,
+    width: 50,
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingLeft: 10,
-    paddingTop:18,
-    paddingBottom:10,
-  },
-  iconWrapper: {
-    width: 45,
-    height: 45,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 30,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: "#212121",
+    borderRadius: 50,
   },
-  initial: {
-    fontSize: 24,
-    textAlign: 'center',
-    resizeMode: 'contain',
-    color: 'black',
-  },
-  text: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'black',
-    paddingLeft: 20,
-  },
+  nickname: {
+    fontSize: 20, 
+    color: "#FFFFFF",
+    fontFamily: "SpaceGrotesk-Bold"
+  }
 });

@@ -1,225 +1,225 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Alert } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Import de AsyncStorage
+import { CheckCircle, Circle, Search, ArrowRight } from 'lucide-react-native';
 
-const SymptomSelector = () => {
+export default function DiagnosticScreen() {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const router = useRouter();
 
-  // Mapping des noms d'affichage des symptômes aux clés attendues par le backend
-  const symptomKeyMap: { [key: string]: string } = {
-    'Taches': 'taches',
-    'Feuilles brune': 'bord_feuille_brun',
-    'Flétrissures': 'fletrissure',
-    'Champignon': 'presence_champignons',
-    'Feuilles jaune': 'feuille_jaune',
-    'Tâches circulaire': 'taches_circulaires',
-    'Pluie récente': 'pluie_recente',
-    'Fértilisation récente': 'fertilisation_recente',
-  };
-
-  const symptoms = [
-    { name: 'Taches', icon: require('../../../assets/images/tache.png') },
-    { name: 'Feuilles brune', icon: require('../../../assets/images/feuillebr.png') },
-    { name: 'Flétrissures', icon: require('../../../assets/images/fletrissure.png') },
-    { name: 'Champignon', icon: require('../../../assets/images/champignon.png') },
-    { name: 'Feuilles jaune', icon: require('../../../assets/images/jaune.png') },
-    { name: 'Tâches circulaire', icon: require('../../../assets/images/tachecirculaire.png') },
-    { name: 'Pluie récente', icon: require('../../../assets/images/pluie.png') },
-    { name: 'Fértilisation récente', icon: require('../../../assets/images/fertilisation.png') },
+  const symptomCategories = [
+    {
+      category: 'Feuilles',
+      symptoms: [
+        { id: 'taches_brunes', name: 'Taches brunes sur les feuilles', description: 'Petites taches circulaires brunes' },
+        { id: 'jaunissement', name: 'Jaunissement des feuilles', description: 'Feuilles qui deviennent jaunes' },
+        { id: 'fletrissement', name: 'Flétrissement', description: 'Feuilles qui se flétrissent et sèchent' },
+        { id: 'rayures_blanches', name: 'Rayures blanches', description: 'Lignes blanches sur les feuilles' },
+        { id: 'taches_oranges', name: 'Taches orange/rouille', description: 'Pustules orange sur les feuilles' },
+      ]
+    },
+    {
+      category: 'Tiges',
+      symptoms: [
+        { id: 'lesions_tiges', name: 'Lésions sur les tiges', description: 'Taches sombres sur la tige' },
+        { id: 'pourriture_base', name: 'Pourriture à la base', description: 'Base de la tige qui pourrit' },
+        { id: 'cassure_tiges', name: 'Cassure des tiges', description: 'Tiges qui se cassent facilement' },
+      ]
+    },
+    {
+      category: 'Épis/Grains',
+      symptoms: [
+        { id: 'grains_vides', name: 'Grains vides', description: 'Épis avec des grains non formés' },
+        { id: 'taches_grains', name: 'Taches sur les grains', description: 'Grains tachetés ou décolorés' },
+        { id: 'epis_courbes', name: 'Épis courbés', description: 'Épis qui se plient anormalement' },
+      ]
+    },
   ];
 
-  const toggleSymptom = (symptomName: string) => {
-    setSelectedSymptoms(prev =>
-      prev.includes(symptomName) ? prev.filter(s => s !== symptomName) : [...prev, symptomName]
+  const toggleSymptom = (symptomId: string) => {
+    setSelectedSymptoms(prev => 
+      prev.includes(symptomId)
+        ? prev.filter(id => id !== symptomId)
+        : [...prev, symptomId]
     );
   };
 
-  // Fonction pour gérer le clic sur le bouton "Choisir"
-  const handleChooseSymptoms = async () => {
-    // Initialiser l'objet avec toutes les clés de symptômes à false
-    // et les clés environnementales à null/valeur par défaut, car elles seront définies sur la page suivante.
-    const inputData: { [key: string]: boolean | string | null } = {
-      taches: false,
-      feuille_jaune: false,
-      taches_circulaires: false,
-      bord_feuille_brun: false,
-      fletrissure: false,
-      presence_champignons: false,
-      pluie_recente: false,
-      fertilisation_recente: false,
-      // Les champs suivants seront remplis sur la page suivante
-      humidite: null,
-      luminosite: null,
-      vent: null,
-      stade_croissance: null,
-      type_sol: null,
-      irrigation: null,
-    };
-
-    // Mettre à jour les valeurs booléennes pour les symptômes sélectionnés
-    selectedSymptoms.forEach(symptomName => {
-      const backendKey = symptomKeyMap[symptomName];
-      if (backendKey) {
-        inputData[backendKey] = true;
-      }
-    });
-
-    try {
-      // Sauvegarder les données dans AsyncStorage
-      await AsyncStorage.setItem('currentAnalysisInput', JSON.stringify(inputData));
-      Alert.alert('Succès', 'Symptômes sauvegardés. Veuillez compléter les informations environnementales.');
-      
-      // Naviguer vers la prochaine page
-      router.push('/(tabs)/(scan)/analyse'); 
-    } catch (error) {
-      console.error("Erreur lors de la sauvegarde des symptômes :", error);
-      Alert.alert('Erreur', 'Impossible de sauvegarder les symptômes. Veuillez réessayer.');
-    }
+  const handleDiagnose = () => {
+    
+    router.push('/(tabs)/(scan)/analyse');
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.titleAnal}>
-        <Feather name="arrow-left" size={20} color="black" />
-        <Text style={styles.title}>Nouvelle analyse</Text>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Diagnostic des Maladies</Text>
+        <Text style={styles.subtitle}>Sélectionnez les symptômes observés sur vos plants de riz</Text>
+        <View style={styles.selectedCount}>
+          <Text style={styles.selectedText}>{selectedSymptoms.length} symptôme(s) sélectionné(s)</Text>
+        </View>
       </View>
 
-      <View style={styles.descri}>
-        <Text style={styles.subtitle2}>Choisissez les symptômes</Text>
-        <Text style={styles.description}>
-          Sélectionnez les symptômes et maladies pour l’analyse
-        </Text>
-      </View>
-
-      <View style={styles.symptomsGrid}>
-        {symptoms.map((symptom, index) => {
-          const isSelected = selectedSymptoms.includes(symptom.name);
-          return (
-            <View key={index} style={styles.symptomContainer}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {symptomCategories.map((category, categoryIndex) => (
+          <View key={categoryIndex} style={styles.categorySection}>
+            <Text style={styles.categoryTitle}>{category.category}</Text>
+            {category.symptoms.map((symptom) => (
               <TouchableOpacity
-                style={[styles.symptomButton, isSelected && { borderColor: '#255C50', borderWidth: 2 }]}
-                onPress={() => toggleSymptom(symptom.name)}
+                key={symptom.id}
+                style={[
+                  styles.symptomCard,
+                  selectedSymptoms.includes(symptom.id) && styles.selectedSymptomCard
+                ]}
+                onPress={() => toggleSymptom(symptom.id)}
               >
-                <Image source={symptom.icon} style={styles.icon} resizeMode="contain" />
+                <View style={styles.symptomContent}>
+                  <View style={styles.symptomInfo}>
+                    <Text style={[
+                      styles.symptomName,
+                      selectedSymptoms.includes(symptom.id) && styles.selectedSymptomText
+                    ]}>
+                      {symptom.name}
+                    </Text>
+                    <Text style={styles.symptomDescription}>{symptom.description}</Text>
+                  </View>
+                  <View style={styles.checkboxContainer}>
+                    {selectedSymptoms.includes(symptom.id) ? (
+                      <CheckCircle size={24} color="#22C55E" />
+                    ) : (
+                      <Circle size={24} color="#9ca3af" />
+                    )}
+                  </View>
+                </View>
               </TouchableOpacity>
-              <Text style={[styles.symptomLabel, isSelected && styles.selectedLabel]}>
-                {symptom.name}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
+            ))}
+          </View>
+        ))}
+      </ScrollView>
 
-      <TouchableOpacity
-        style={styles.chooseButton}
-        onPress={handleChooseSymptoms} // Appelle la fonction de sauvegarde et de navigation
-      >
-        <Text style={styles.chooseButtonText}>Choisir</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      {selectedSymptoms.length > 0 && (
+        <View style={styles.footer}>
+          <TouchableOpacity style={styles.diagnoseButton} onPress={handleDiagnose}>
+            <Search size={20} color="white" />
+            <Text style={styles.diagnoseText}>Analyser les Symptômes</Text>
+            <ArrowRight size={20} color="white" />
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 30,
+    flex: 1,
+    backgroundColor: '#f8fafc',
   },
-  userHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 25,
-  },
-  userCercle: {
-    width: 60,
-    height: 60,
-    borderRadius: '50%',
-    backgroundColor: '#E1E1E1',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  userInitial: {
-    fontWeight: 'bold',
-    color: '#000',
-    fontSize:30,
-  },
-  userName: {
-    fontSize: 25,
-    fontWeight: 'bold',
-  },
-  titleAnal: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 25,
+  header: {
+    backgroundColor: 'white',
+    paddingTop: 60,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
   },
   title: {
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#000000',
-    marginLeft: 30,
+    color: '#1f2937',
+    marginBottom: 8,
   },
-  descri: {
+  subtitle: {
+    fontSize: 16,
+    color: '#6b7280',
+    lineHeight: 24,
     marginBottom: 16,
   },
-  subtitle2: {
-    fontSize: 18,
+  selectedCount: {
+    backgroundColor: '#f0fdf4',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  selectedText: {
+    fontSize: 14,
+    color: '#22C55E',
+    fontWeight: '500',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  categorySection: {
+    marginBottom: 30,
+  },
+  categoryTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 12,
   },
-  description: {
-    fontSize: 16,
-    color: 'gray',
-  },
-  symptomsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  symptomContainer: {
-    width: '30%',
-    alignItems: 'center',
-    marginBottom: 25,
-  },
-  symptomButton: {
-    width: 70,
-    height: 70,
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    justifyContent: 'center',
-    alignItems: 'center',
+  symptomCard: {
+    backgroundColor: 'white',
+    borderRadius: 12,
     marginBottom: 8,
-    backgroundColor:'#CCE9DF',
+    borderWidth: 2,
+    borderColor: 'transparent',
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
   },
-  icon: {
-    width: 40,
-    height: 50,
+  selectedSymptomCard: {
+    borderColor: '#22C55E',
+    backgroundColor: '#f0fdf4',
   },
-  symptomLabel: {
-    fontSize: 12,
-    color: '#555',
-    textAlign: 'center',
-  },
-  selectedLabel: {
-    color: '#000000',
-    fontWeight: 'bold',
-  },
-  chooseButton: {
-    backgroundColor: '#000000',
-    padding: 15,
-    borderRadius: '10%',
+  symptomContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
+    padding: 16,
   },
-  chooseButtonText: {
+  symptomInfo: {
+    flex: 1,
+  },
+  symptomName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  selectedSymptomText: {
+    color: '#22C55E',
+  },
+  symptomDescription: {
+    fontSize: 14,
+    color: '#6b7280',
+    lineHeight: 20,
+  },
+  checkboxContainer: {
+    marginLeft: 16,
+  },
+  footer: {
+    backgroundColor: 'white',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+  },
+  diagnoseButton: {
+    backgroundColor: '#22C55E',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  diagnoseText: {
+    fontSize: 16,
+    fontWeight: '600',
     color: 'white',
-    fontSize: 30,
   },
 });
-
-export default SymptomSelector;

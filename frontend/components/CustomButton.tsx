@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
         opacity: 0.5,
     },
     text: {
-        color: '#FFFFFF',
+        color: '#212121',
         fontWeight: 'bold',
         fontSize: 16,
     }
