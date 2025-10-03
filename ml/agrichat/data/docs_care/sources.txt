@@ -1,0 +1,37 @@
+Ce document répertorie les sources et les bases d'information utilisées pour la création et la mise à jour des fiches pratiques.
+
+L'ensemble des fiches a été rédigé en se basant sur les principes du Système de Riziculture Intensive (SRI) et les recommandations techniques d'institutions de recherche agronomique malgaches.
+
+---
+### Sources Principales (Fiches Techniques FOFIFA)
+
+Ces fiches techniques détaillées, bien que spécifiques à certaines variétés, décrivent les pratiques agronomiques (préparation du sol, semis, fertilisation) qui sous-tendent l'ensemble des recommandations.
+
+*   **Fiche Technique FOFIFA 185 (PDF via le portail DP-SPAD)**:
+    *   `https://www.dp-spad.org/fileadmin/user_upload/fofifa_185.pdf`
+    *   *Concerne : Description complète d'une variété, itinéraire technique, préparation du sol, semis en ligne, fertilisation.*
+
+*   **Fiche Technique FOFIFA 173 (PDF via le portail DP-SPAD)**:
+    *   `https://www.dp-spad.org/fileadmin/user_upload/fofifa_173.pdf`
+    *   *Concerne : Itinéraire technique pour riz pluvial, caractéristiques, points forts.*
+
+---
+### Sources Complémentaires (Principes et Contexte)
+
+Ces liens fournissent le contexte général et les principes scientifiques du Système de Riziculture Intensive (SRI) à Madagascar.
+
+*   **FAO - Le Système de Riziculture Intensive (SRI)**:
+    *   `https://www.fao.org/3/y2776f/y2776f07.htm`
+    *   *Concerne : Principes fondamentaux du SRI (repiquage jeune, gestion de l'eau).*
+
+*   **Cornell University - SRI Madagascar Homepage**:
+    *   `https://sri.ciifad.cornell.edu/countries/madagascar/`
+    *   *Concerne : Contexte, historique et pratiques du SRI à Madagascar.*
+
+*   **IRD (Institut de Recherche pour le Développement) - Le système de riziculture intensive à Madagascar**:
+    *   `https://www.documentation.ird.fr/hor/fdi:010031883`
+    *   *Concerne : Analyse scientifique et résultats agronomiques du SRI.*
+
+*   **AfricaRice - Collaboration avec le FOFIFA**:
+    *   `https://www.africarice.org/fr/news-and-events/news/fofifa-and-africarice-release-two-new-high-performing-rice-varieties-madagascar`
+    *   *Concerne : Importance de la recherche variétale et du partenariat institutionnel.*
