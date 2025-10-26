@@ -1,19 +1,22 @@
+# schemas.py
 from pydantic import BaseModel
+from typing import Dict
 from datetime import datetime
 
+class ScanPredictInput(BaseModel):
+    user_id: str
+    symptomes: Dict
+
 class ScanBase(BaseModel):
-    maladie: str
-    description: str | None = None
-    gravite: str | None = None
-    symptomes: str | None = None
-    session_id: str | None = None
+    user_id: str
+    symptomes: Dict
+    prediction: str
 
 class ScanCreate(ScanBase):
-    user_id: int
+    pass
 
 class ScanResponse(ScanBase):
     id: int
-    user_id: int
     created_at: datetime
 
     class Config:
