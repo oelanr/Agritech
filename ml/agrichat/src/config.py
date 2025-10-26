@@ -13,7 +13,6 @@ def load_api_key_from_secret(secret_path, key_name):
         with open(secret_path, "r") as f:
             # Lecture du fichier .env 
             env_content = f.read()
-        # Parse the content using dotenv_values
         env_vars = dotenv_values(stream=io.StringIO(env_content))
         if key_name in env_vars:
             return env_vars[key_name]
@@ -46,7 +45,6 @@ hf_api_key = load_api_key_from_secret("/run/secrets/hf_api_key", "HUGGINGFACE_AP
 if hf_api_key:
     os.environ["HUGGINGFACE_API_KEY"] = hf_api_key
 else:
-    # Fallback to os.getenv for local development or if secret not found
     hf_api_key = os.getenv("HUGGINGFACE_API_KEY")
     if not hf_api_key:
         raise ValueError("HUGGINGFACE_API_KEY not found in environment or secret file.")

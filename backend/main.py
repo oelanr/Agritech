@@ -156,7 +156,7 @@ def predict_and_chat(input_data: SymptomesInput):
 
 
 # Root simple
-@app.get("/")
+@app.get("/") 
 def root():
     return {"message": "Agrichat API is running 🚀"}
 

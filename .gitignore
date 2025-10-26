@@ -17,6 +17,7 @@ env/
 venv/
 __pycache__/
 *.py[cod]
+*.pdf
 *.pyo
 .mypy_cache/
 .pytest_cache/

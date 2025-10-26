@@ -66,7 +66,7 @@ Répondez poliment et brièvement à :
 def generate_symptom_response(state: MessagesState):
     """Invite l’utilisateur à utiliser l’outil diagnostic."""
     text = (
-        "Vous semblez décrire des symptômes sur vos plants de riz. "
+        "Vous semblez décrire des symptômes sur vos plants de riz."
         "Pour un diagnostic précis, veuillez utiliser l’outil de diagnostic."
     )
     return {"messages": [AIMessage(content=text)]}
