@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Home from '../screens/Home';
-import { StyleSheet } from 'react-native';
+import { StyleSheet,Dimensions } from 'react-native';
 import Analyse from '../screens/Analyse';
 import Chat from '../screens/Chat';
 import Historique from '../screens/Historique';
@@ -9,6 +9,7 @@ import CustomIcon from '@/components/CustomIcon';
 import CustomHeader from '@/components/CustomHeader';
 
 const Tab = createBottomTabNavigator();
+const { width, height } = Dimensions.get('window');
 
 export default function TabNavigator() {
   return (
@@ -116,19 +117,11 @@ export default function TabNavigator() {
 
 const styles = StyleSheet.create({
     tabBarStyle: {
-        height: 70, 
-        position: 'absolute',
-        backgroundColor: "#FFFFFF",
-        borderTopWidth: 0,
-        borderRadius: 50,
-        marginHorizontal: 15, 
-        marginBottom:10,
-        bottom: 20, 
-        flexDirection: 'row',
-        justifyContent: 'space-evenly', 
-        alignItems: 'center',           
-        elevation: 3,
-        borderTopColor: 'transparent',
-        overflow: 'hidden', 
-    },
+    height: 70,              
+      paddingBottom: 10,       
+      paddingTop: 10,          
+      backgroundColor: "#fff", 
+      borderTopWidth: 0,       
+      elevation: 5,            
+    }
 });

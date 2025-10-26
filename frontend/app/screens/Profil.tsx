@@ -1,6 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, View,TouchableOpacity } from 'react-native'
+import React,{ useEffect,useState } from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { CustomHeroForProfile } from '@/components/CustomHero'
+import UserEmail from '@/components/UserEmail'
+import { router } from "expo-router";
 import { 
   useFonts, 
   SpaceGrotesk_400Regular, // Poids Regular
@@ -23,6 +26,17 @@ const UserName = () => {
   </>
 }
 
+const handleLogout = async () => {
+  try {
+    await AsyncStorage.removeItem('authToken');
+    await AsyncStorage.removeItem('email');
+    router.replace('/auth/login'); // ou ton chemin d’écran de login
+  } catch (error) {
+    console.error('Erreur lors de la déconnexion :', error);
+  }
+};
+
+
 const SecurityAccount = () => {
    const [fontsLoaded] = useFonts({
     'SpaceGrotesk-Regular': SpaceGrotesk_400Regular,
@@ -30,22 +44,38 @@ const SecurityAccount = () => {
     'SpaceGrotesk-Medium' : SpaceGrotesk_500Medium,
    });
   
+  const [email, setEmail] = useState<string | null>(null);
+
+  // récupération de l'email depuis AsyncStorage
+  useEffect(() => {
+    const loadEmail = async () => {
+      try {
+        const storedEmail = await AsyncStorage.getItem('email');
+        if (storedEmail) setEmail(storedEmail);
+      } catch (error) {
+        console.error('Erreur lors du chargement de l’email', error);
+      }
+    };
+    loadEmail();
+  }, []);
+  
   return <>
     <View style={styles.SecurityContainer}>
       <Text style={styles.label}>Sécurité du compte</Text>
       <View style={styles.infoView}>
         <Text style={styles.label}>Email</Text>
-        <Text style={styles.fullname}>harosonbryan@gmail.com</Text>
+        <UserEmail />
       </View>
       <View style={styles.infoView}>
         <Text style={styles.label}>Mot de passe</Text>
         <Text style={styles.fullname}>ooooooooooo</Text>
       </View>
       <View style={styles.infoView}>
-        <Text style={styles.label}>Modification</Text>
-        <View style={styles.modify}>
-          <Text style={styles.modifyText}>Modifier</Text>
-        </View>
+        <Text style={styles.label}>Déconnexion</Text>
+        <TouchableOpacity style={styles.modify} onPress={handleLogout}>
+          <Text style={styles.modifyText}>Se déconnecter</Text>
+        </TouchableOpacity>
+
       </View>
     </View>
   </>

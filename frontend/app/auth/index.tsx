@@ -1,106 +1,75 @@
-import { Image, StyleSheet, Text, View } from "react-native";
 import React from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, SafeAreaView, Dimensions } from "react-native";
 import { router } from "expo-router";
-import CustomButton from "@/components/CustomButton"
 
-const AuthIndex = () => {
+
+const { width, height } = Dimensions.get("window");
+
+const WelcomeScreen = () => {
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.logoContainer}>
-        <Image
-          
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <Text style={styles.title}>Agri<Text style={styles.span}>TECH</Text></Text>
-        <Text style={styles.subtitle}>Analyse traitement et conseil</Text>
-      </View>
+    <ImageBackground
+      source={require("@/assets/images/vary_tymain.jpg")}
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <SafeAreaView style={styles.container}>
+        <View style={styles.topTextContainer}>
+          <Text style={styles.title}>L'application idéale pour vos plantations de riz</Text>
+        </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Tongasoa</Text>
-        <Text style={styles.cardSubtitle}>
-          Veuillez créer ou vous connecter à votre compte pour commencer
-        </Text>
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity style={styles.signInButton} onPress={() => router.push('/auth/login')}>
+            <Text style={styles.signInText}>Se connecter</Text>
+          </TouchableOpacity>
 
-        <CustomButton
-          title="Sign in"
-          handlePress={() => router.push("/auth/login")}
-          containerStyles={styles.signInButton}
-          textStyles={styles.signInText}
-        />
-        <CustomButton
-          title="Sign up"
-          handlePress={() => router.push("/auth/sign")}
-          containerStyles={styles.signUpButton}
-          textStyles={styles.signUpText}
-        />
-      </View>
-    </SafeAreaView>
+          <TouchableOpacity>
+            <Text style={styles.createText} onPress={() => router.push('/auth/sign')}>S'inscrire</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </ImageBackground>
   );
 };
 
+export default WelcomeScreen;
+
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    width: "100%",
+    height: "105%",
+  },
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    justifyContent: "space-between",
   },
-  logoContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logo: {
-    width: 100,
-    height: 100,
+  topTextContainer: {
+    marginTop: height * 0.1,
+    marginLeft: width * 0.05,
   },
   title: {
-    fontSize: 40,
-    fontWeight: "bold",
-    color: "#B5A663",
-    marginTop: 10,
+    color: "#fff",
+    fontSize: width * 0.1,
+    lineHeight: width * 0.15,
   },
-  subtitle: {
-    fontSize: 20,
-  },
-  span: {
-    fontSize: 30,
-    color: "#255C50",
-  },
-  card: {
-    backgroundColor: "#255C50",
-    padding: 30,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    paddingBottom: 50,
-    height:381
-  },
-  cardTitle: {
-    fontSize: 32,
-    color: "#FFFFFF",
-    fontWeight: "bold",
-  },
-  cardSubtitle: {
-    fontSize: 24,
-    color: "#FFFFFF",
-    marginTop: 10,
-    marginBottom: 30,
+  bottomContainer: {
+    alignItems: "center",
+    marginBottom: height * 0.30,
   },
   signInButton: {
-    backgroundColor: "#000000",
+    backgroundColor: "rgba(128, 128, 128, 0.3)",
+    paddingVertical: height * 0.01,
+    paddingHorizontal: width * 0.35,
     borderRadius: 25,
     marginBottom: 15,
   },
   signInText: {
-    color: "#FFFFFF",
+    color: "#fff",
+    fontSize: width * 0.05,
   },
-  signUpButton: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 25,
-  },
-  signUpText: {
-    color: "#000000",
+  createText: {
+    color: "#fff",
+    fontSize: width * 0.04,
+    textDecorationLine: "underline",
   },
 });
-
-export default AuthIndex;

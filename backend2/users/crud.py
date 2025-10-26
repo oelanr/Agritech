@@ -7,6 +7,7 @@ from core.security import create_access_token
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_password_hash(password: str) -> str:
+    password = password[:72]
     return pwd_context.hash(password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -27,7 +28,8 @@ def create_user(db: Session, user: schemas.UserCreate) -> schemas.TokenResponse:
     return schemas.TokenResponse(
         access_token=token,
         email=new_user.email,
-        message="Compte créé"
+        message="Compte créé",
+        id = new_user.id
     )
 
 def login_user(db: Session, user: schemas.UserLogin) -> schemas.TokenResponse:
@@ -39,5 +41,6 @@ def login_user(db: Session, user: schemas.UserLogin) -> schemas.TokenResponse:
     return schemas.TokenResponse(
         access_token=token,
         email=db_user.email,
-        message="Connexion réussie"
+        message="Connexion réussie",
+        id = db_user.id
     )

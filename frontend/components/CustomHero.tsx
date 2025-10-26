@@ -1,8 +1,10 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
+import UserEmail from './UserEmail';
 import { 
   useFonts, 
   SpaceGrotesk_400Regular, // Poids Regular
+  SpaceGrotesk_500Medium,
   SpaceGrotesk_700Bold      // Poids Bold 
 } from '@expo-google-fonts/space-grotesk';
 const CustomHero = ({title="",heroText=""}) => {
@@ -10,6 +12,7 @@ const CustomHero = ({title="",heroText=""}) => {
   const [fontsLoaded] = useFonts({
     'SpaceGrotesk-Regular': SpaceGrotesk_400Regular,
     'SpaceGrotesk-Bold': SpaceGrotesk_700Bold,
+    'SpaceGrotesk-Medium' : SpaceGrotesk_500Medium
   });
 
   return (
@@ -29,7 +32,7 @@ export const CustomHeroForProfile = () => {
         <Text style={styles.nickname}>BR</Text>
       </View>
       <Text style={styles.fullname}>bryan Ranaivo</Text>
-      <Text style={styles.email}>harosonbryan@gmail.com</Text>
+      <UserEmail style={{color:'#666666ff'}}/>
     </View>
   </>
 }
@@ -38,7 +41,7 @@ export default CustomHero
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 20,
+    paddingTop: 10,
   },
   profileContainer: {
     flexDirection: 'column',
@@ -47,7 +50,7 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign:'center',
-    fontFamily: 'SpaceGrotesk-Regular',
+    fontFamily: 'SpaceGrotesk-Medium',
     fontSize: 36
   },
   heroText: {

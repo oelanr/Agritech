@@ -2,24 +2,31 @@ import pandas as pd
 import joblib
 import math
 from collections import Counter
+import sys
+import os
+
 from arbre import NoeudArbre
 import os
 from graphviz import Digraph
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+if CURRENT_DIR not in sys.path:
+    sys.path.append(CURRENT_DIR)
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Remonte 3 niveaux (de src/ vers la racine projet)
-PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..', '..', '..'))
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..'))
 
-DATA_PATH = os.path.join(BASE_DIR, '..', 'data', 'data.csv')
+DATA_PATH = os.path.join(BASE_DIR, '..', 'data', 'dataset.csv')
 MODEL_PATH = os.path.join(PROJECT_ROOT, 'models', 'model.joblib')
 
 def entropie(exemples):
     total = len(exemples)
     if total == 0:
         return 0
-    classes = [ex['maladie'] for ex in exemples]
+    classes = [ex['classe'] for ex in exemples]
     compte = Counter(classes)
     return -sum((nb/total) * math.log2(nb/total) for nb in compte.values())
 
@@ -61,18 +68,18 @@ def meilleur_split(data, features):
 def classe_majoritaire(data):
     if not data:
         return None
-    classes = [ex['maladie'] for ex in data]
+    classes = [ex['classe'] for ex in data]
     return Counter(classes).most_common(1)[0][0]
 
 def toutes_meme_classe(data):
     if not data:
         return True
-    premiere_classe = data[0]['maladie']
-    return all(ex['maladie'] == premiere_classe for ex in data)
+    premiere_classe = data[0]['classe']
+    return all(ex['classe'] == premiere_classe for ex in data)
 
 def construire_arbre_id3(data, features):
     if toutes_meme_classe(data):
-        return NoeudArbre(classe=data[0]['maladie'])
+        return NoeudArbre(classe=data[0]['classe'])
     
     if not features:
         return NoeudArbre(classe=classe_majoritaire(data))
@@ -134,7 +141,7 @@ def train_model():
 
     data = df.to_dict(orient='records')
     
-    features = [col for col in df.columns if col != 'maladie']
+    features = [col for col in df.columns if col != 'classe']
     arbre = construire_arbre_id3(data, features)
     
     # Affichage avec graphviz (image claire et hiérarchique)

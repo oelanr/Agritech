@@ -3,8 +3,8 @@ from typing import Literal
 from langgraph.graph import StateGraph, MessagesState, END
 from langgraph.prebuilt import tools_condition, ToolNode
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
-from tools import retrieve
-from config import llm
+from .tools import retrieve
+from .config import llm
 from langgraph.checkpoint.memory import MemorySaver
 
 # --- ROUTAGE DES MESSAGES ---
@@ -91,6 +91,15 @@ def generate_technical_response(state: MessagesState):
         m.content for m in state["messages"] if getattr(m, "type", None) == "tool"
     )
 
+    # --- CORRECTION CRITIQUE POUR ÉVITER "list index out of range" ---
+    if not docs_content.strip():
+        # Si aucun document n'a été trouvé, on fournit un contexte par défaut.
+        docs_content = (
+            "CONTEXTE NON TROUVÉ. Répondez à la question de l'utilisateur avec vos connaissances générales "
+            "en riziculture. Ne faites pas référence à une base de données ou un contexte spécifique."
+        )
+        print("--- AVERTISSEMENT: AUCUN DOCUMENT TROUVÉ (CONTEXTE PAR DÉFAUT APPLIQUÉ) ---")
+        
     system_message_content = (
         "Tu es un conseiller expert en riziculture. Donne des conseils clairs et pratiques.\n\n"
         "Instructions :\n"

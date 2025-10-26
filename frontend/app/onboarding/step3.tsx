@@ -33,7 +33,7 @@ const Onboarding3 = () => {
         </View>
 
         <TouchableOpacity>
-          <Text style={styles.next} onPress={()=>{router.replace("../screens")}}>Commencer </Text>
+          <Text style={styles.next} onPress={()=>{router.replace("../auth/login")}}>Commencer </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

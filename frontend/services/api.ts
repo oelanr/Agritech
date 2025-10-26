@@ -1,8 +1,9 @@
-import { AuthResponse, AuthErrorResponse } from "./types"
+import { AuthResponse, AuthErrorResponse } from "./types";
 import axios, { AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = 'http://192.168.88.251:8001/api/'; 
+// URL de ton backend FastAPI
+const API_BASE_URL = 'http://10.0.2.2:8001';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -10,12 +11,14 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Intercepteur pour ajouter le token JWT à chaque requête
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     try {
       const token = await AsyncStorage.getItem('authToken');
       if (token && config.headers) {
-        config.headers.Authorization = `Token ${token}`;
+        config.headers.Authorization = `Bearer ${token}`; // FastAPI JWT standard
       }
     } catch (error) {
       console.error("Failed to get token from storage", error);

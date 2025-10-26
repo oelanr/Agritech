@@ -6,7 +6,7 @@ class Scan(Base):
     __tablename__ = "scans"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # FK vers User
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)  # FK vers User
     symptomes = Column(JSON, nullable=False)
     prediction = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -1,106 +1,131 @@
-import { StyleSheet, Text, View,TouchableOpacity, ScrollView,Image } from 'react-native'
-import React from 'react'
-import { useState } from 'react'
-import CustomHeader from '@/components/CustomHeader'
+import React, { useState } from 'react'
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Image, Dimensions } from 'react-native'
 import CustomHero from '@/components/CustomHero'
+import CustomAlert from '@/components/CustomAlert'
+import { symptomData } from '../data/symptoms'
+import { useNavigation } from "@react-navigation/native"
 import { 
   useFonts, 
-  SpaceGrotesk_400Regular, // Poids Regular
+  SpaceGrotesk_400Regular,
   SpaceGrotesk_500Medium,
-  SpaceGrotesk_700Bold      // Poids Bold 
-} from '@expo-google-fonts/space-grotesk';
-import { symptomData } from '../data/symptoms';
-import { useNavigation } from "@react-navigation/native";
-import SendIcon from '@/components/CustomIcon'
-const Compteur = ({count=0}) => {
+  SpaceGrotesk_700Bold
+} from '@expo-google-fonts/space-grotesk'
+
+const { width, height } = Dimensions.get('window')
+
+// ------------------- Compteur -------------------
+interface CompteurProps {
+  count?: number
+}
+
+const Compteur: React.FC<CompteurProps> = ({ count = 0 }) => {
   const [fontsLoaded] = useFonts({
     'SpaceGrotesk-Regular': SpaceGrotesk_400Regular,
-    'SpaceGrotesk-Medium':SpaceGrotesk_500Medium,
+    'SpaceGrotesk-Medium': SpaceGrotesk_500Medium,
     'SpaceGrotesk-Bold': SpaceGrotesk_700Bold,
-  });
-  return <>
+  })
+
+  if (!fontsLoaded) return null
+
+  return (
     <View style={styles.compteur}>
       <Text style={styles.compteurText}>{count} symptôme(s) sélectionné(s)</Text>
     </View>
-  </>
+  )
 }
 
-const FormButton = ({ formData }) => {
-  const navigation = useNavigation();
+// ------------------- FormButton -------------------
+interface FormButtonProps {
+  formData: Record<string, any>
+  resetForm: () => void
+  requiredFields: string[]
+}
+
+const FormButton: React.FC<FormButtonProps> = ({ formData, resetForm, requiredFields }) => {
+  const navigation = useNavigation()
+  const [alertVisible, setAlertVisible] = useState(false)
+  const [missingFields, setMissingFields] = useState<string[]>([])
+
+  const handlePress = () => {
+    const missing = requiredFields.filter((field) => {
+      const value = formData[field]
+      return value === undefined || value === null || value === "" || value === false
+    })
+
+    if (missing.length > 0) {
+      setMissingFields(missing)
+      setAlertVisible(true)
+      return
+    }
+
+    navigation.navigate("Chat", { data: formData })
+    resetForm()
+  }
 
   return (
-    <TouchableOpacity
-      // onPress={() => navigation.navigate("Chat", { data: formData })}
-      style={{
-        backgroundColor: "#212121",
-        paddingHorizontal: 15,
-        paddingVertical: 5,
-        borderWidth: 2,
-        borderColor: "#4b4b4bff",
-        elevation:10,
-        borderRadius:10,
-        justifyContent: "center",
-        alignItems: "center",
-        alignSelf: "center",
-      }}
-    >
-      <Image
-        source={require("../../assets/icons/send.png")}
-        style={{
-          width: 24,
-          height: 24,
-          tintColor: "#fff",
-          resizeMode: "contain",
-        }}
-      />
-    </TouchableOpacity>
-  );
-};
+    <>
+      <TouchableOpacity
+        onPress={handlePress}
+        style={styles.buttonSend}
+      >
+        <Image
+          source={require("../../assets/icons/send.png")}
+          style={styles.buttonIcon}
+        />
+      </TouchableOpacity>
 
-const Form = ({selectedValues,setSelectedValues}) => {
+      <CustomAlert
+        visible={alertVisible}
+        missingFields={missingFields}
+        onClose={() => setAlertVisible(false)}
+      />
+    </>
+  )
+}
+
+// ------------------- Form -------------------
+interface FormProps {
+  selectedValues: Record<string, any>
+  setSelectedValues: React.Dispatch<React.SetStateAction<Record<string, any>>>
+}
+
+const Form: React.FC<FormProps> = ({ selectedValues, setSelectedValues }) => {
   const [fontsLoaded] = useFonts({
     'SpaceGrotesk-Regular': SpaceGrotesk_400Regular,
-    'SpaceGrotesk-Medium':SpaceGrotesk_500Medium,
+    'SpaceGrotesk-Medium': SpaceGrotesk_500Medium,
     'SpaceGrotesk-Bold': SpaceGrotesk_700Bold,
-  });
+  })
 
-  if (!fontsLoaded) return null;
+  if (!fontsLoaded) return null
 
   const handleSelect = (field: string, value: any, multiple = false) => {
     setSelectedValues((prev) => {
       if (multiple) {
-        const old = prev[field] || [];
+        const old = prev[field] || []
         return {
           ...prev,
           [field]: old.includes(value)
             ? old.filter((v) => v !== value)
             : [...old, value],
-        };
+        }
       } else {
-        return { ...prev, [field]: value };
+        return { ...prev, [field]: value }
       }
-    });
-  };
+    })
+  }
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: "white", padding: 16,marginBottom:85 }}
+      style={{ backgroundColor: "#FFFFFF", padding: 16 }}
+      contentContainerStyle={{ paddingBottom: 200 }} 
       showsVerticalScrollIndicator={false}
     >
       {Object.entries(symptomData).map(([category, fields]) => (
         <View key={category} style={{ marginBottom: 24 }}>
-          {/* Titre de section */}
-          <Text
-            style={{
-              fontFamily: "SpaceGrotesk-Bold",
-              fontSize: 20,
-              marginBottom: 12,
-            }}
-          >
+          <Text style={{ fontFamily: "SpaceGrotesk-Bold", fontSize: 20, marginBottom: 12 }}>
             {category.charAt(0).toUpperCase() + category.slice(1)}
           </Text>
 
-          {/* Champs */}
           {fields.map((field) => (
             <View
               key={field.key}
@@ -126,73 +151,41 @@ const Form = ({selectedValues,setSelectedValues}) => {
                 }
               }
             >
-              {/* Label */}
-              <Text
-                style={{
-                  fontFamily: "SpaceGrotesk-Medium",
-                  fontSize: 16,
-                }}
-              >
+              <Text style={{ fontFamily: "SpaceGrotesk-Medium", fontSize: 16 }}>
                 {field.label}
               </Text>
 
-              {/* Binaire → cercle + label alignés */}
               {field.type === "binaire" && (
                 <TouchableOpacity
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                  }}
-                  onPress={() =>
-                    handleSelect(
-                      field.key,
-                      selectedValues[field.key] ? 0 : 1
-                    )
-                  }
+                  style={{ flexDirection: "row", alignItems: "center" }}
+                  onPress={() => handleSelect(field.key, selectedValues[field.key] ? 0 : 1)}
                 >
-                  {/* Cercle */}
-                  <View
-                    style={{
-                      width: 22,
-                      height: 22,
-                      borderRadius: 11,
-                      borderWidth: 2,
-                      borderColor: "#212121",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      marginRight: 10,
-                    }}
-                  >
+                  <View style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 11,
+                    borderWidth: 2,
+                    borderColor: "#212121",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginRight: 10,
+                  }}>
                     {selectedValues[field.key] ? (
-                      <View
-                        style={ 
-                        {
-                          width: 12,
-                          height: 12,
-                          borderRadius: 6,
-                          backgroundColor: "#212121",
-                        }
-                      }
-                      />
+                      <View style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 6,
+                        backgroundColor: "#212121",
+                      }}/>
                     ) : null}
                   </View>
 
-                  {/* Texte aligné au centre verticalement */}
-                  <Text
-                    style={
-                    {
-                      fontFamily: "SpaceGrotesk-Regular",
-                        fontSize: 15,
-                      color:"#212121"
-                    }
-                  }
-                  >
+                  <Text style={{ fontFamily: "SpaceGrotesk-Regular", fontSize: 15, color:"#212121" }}>
                     {selectedValues[field.key] ? "Oui" : "Non"}
                   </Text>
                 </TouchableOpacity>
               )}
 
-              {/* Catégorielle / Ordinale → boutons carrés */}
               {(field.type === "categorielle" || field.type === "ordinale") && (
                 <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
                   {field.options?.map((opt) => (
@@ -206,29 +199,16 @@ const Form = ({selectedValues,setSelectedValues}) => {
                         marginRight: 8,
                         marginBottom: 8,
                         borderWidth: 1,
-                        borderColor:
-                          selectedValues[field.key] === opt
-                            ? "#868686ff"
-                            : "#d1d5db",
-                        backgroundColor:
-                          selectedValues[field.key] === opt
-                            ? "#212121"
-                            : "#f3f4f6",
+                        borderColor: selectedValues[field.key] === opt ? "#868686ff" : "#d1d5db",
+                        backgroundColor: selectedValues[field.key] === opt ? "#212121" : "#f3f4f6",
                       }}
-                      onPress={() =>
-                        handleSelect(field.key, opt, field.multiple)
-                      }
+                      onPress={() => handleSelect(field.key, opt, field.multiple)}
                     >
-                      <Text
-                        style={{
-                          fontFamily: "SpaceGrotesk-Regular",
-                          fontSize: 14,
-                          color:
-                            selectedValues[field.key] === opt
-                              ? "white"
-                              : "#111",
-                        }}
-                      >
+                      <Text style={{
+                        fontFamily: "SpaceGrotesk-Regular",
+                        fontSize: 14,
+                        color: selectedValues[field.key] === opt ? "white" : "#111",
+                      }}>
                         {opt}
                       </Text>
                     </TouchableOpacity>
@@ -239,39 +219,55 @@ const Form = ({selectedValues,setSelectedValues}) => {
           ))}
         </View>
       ))}
-
     </ScrollView>
-  );
+  )
 }
 
-const Analyse = () => {
+// ------------------- Analyse -------------------
+const Analyse: React.FC = () => {
+  // Initialisation formData : binaires à 0, autres champs à null
+  const initialFormData: Record<string, any> = {}
+  Object.values(symptomData).flat().forEach(field => {
+    initialFormData[field.key] = field.type === "binaire" ? 0 : null
+  })
 
-  const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState<Record<string, any>>(initialFormData)
 
-   const countSelected = Object.values(formData).filter(
-    (v) => v !== null && v !== "" && v !== false
-  ).length;
+  const requiredFields = Object.values(symptomData).flat().map((f) => f.key)
 
-  return <>
+  const resetForm = () => {
+    const newForm: Record<string, any> = {}
+    Object.values(symptomData).flat().forEach(field => {
+      newForm[field.key] = field.type === "binaire" ? 0 : null
+    })
+    setFormData(newForm)
+  }
+
+  const countSelected = Object.values(formData).filter(v => v !== null && v !== "" && v !== false).length
+
+  return (
     <View style={styles.ecran}>
-      <CustomHero title="Analyse des plants de riz" heroText={"Sélectionnez les symptômes observés sur vos plants de riz"}/>
+      <CustomHero 
+        title="Analyse des plants de riz" 
+        heroText={"Sélectionnez les symptômes observés sur vos plants de riz"}
+      />
       <View style={styles.formsend}>
         <Compteur count={countSelected} />
-        <FormButton />
+        <FormButton formData={formData} resetForm={resetForm} requiredFields={requiredFields} />
       </View>
-      <Form  selectedValues={formData} setSelectedValues={setFormData}/>
+      <Form selectedValues={formData} setSelectedValues={setFormData}/>
     </View>
-  </>
+  )
 }
 
 export default Analyse
 
+// ------------------- Styles -------------------
 const styles = StyleSheet.create({
   ecran: {
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 5,
-    paddingBottom: 20,
-    height: "100%",
+    height: height,
   },
   compteur: {
     marginTop:20,
@@ -295,5 +291,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal:20
-  }
+  },
+  buttonSend: {
+    backgroundColor: "#212121",
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    borderWidth: 2,
+    borderColor: "#4b4b4bff",
+    elevation: 10,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+  },
+  buttonIcon: {
+    width: 24,
+    height: 24,
+    tintColor: "#fff",
+    resizeMode: "contain",
+  },
 })

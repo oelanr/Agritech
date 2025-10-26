@@ -13,3 +13,4 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
     email: EmailStr
     message: str
+    id:str

@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import SessionLocal
-from . import schemas,crud
+from . import schemas, crud
+import os
+import sys
 
 router = APIRouter()
 
-# Dependency DB
+# --- Dépendance DB ---
 def get_db():
     db = SessionLocal()
     try:
@@ -13,6 +15,17 @@ def get_db():
     finally:
         db.close()
 
+# --- Préparation chemins ---
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+SRC_PATH = os.path.abspath(os.path.join(CURRENT_DIR, '..', '../ml/classification/src'))
+
+if SRC_PATH not in sys.path:
+    sys.path.append(SRC_PATH)
+
+# --- Import du module predict.py ---
+from predict import predict as predict_model  # ta fonction personnalisée
+
+# --- ROUTES CRUD ---
 @router.post("/save", response_model=schemas.ScanResponse)
 def save_scan(scan: schemas.ScanCreate, db: Session = Depends(get_db)):
     return crud.create_scan(db, scan)
@@ -23,3 +36,26 @@ def get_history(user_id: int, db: Session = Depends(get_db)):
     if not scans:
         raise HTTPException(status_code=404, detail="Aucun historique trouvé")
     return scans
+
+# --- ROUTE DE PRÉDICTION ---
+@router.post("/predict", response_model=schemas.ScanResponse)
+def predict_and_save(scan_input: schemas.ScanPredictInput, db: Session = Depends(get_db)):
+    try:
+        exemple = dict(scan_input.symptomes)
+        prediction = predict_model(exemple)
+
+        if prediction is None:
+            raise HTTPException(status_code=500, detail="Modèle IA non disponible")
+
+        scan_data = schemas.ScanCreate(
+            user_id=scan_input.user_id,
+            symptomes=scan_input.symptomes,
+            prediction=prediction
+        )
+
+        db_scan = crud.create_scan(db, scan_data)
+        return db_scan
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur de prédiction : {str(e)}")
+

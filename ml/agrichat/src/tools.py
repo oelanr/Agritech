@@ -1,6 +1,6 @@
 # tools.py
 from langchain_core.tools import tool
-from vectorstore import vector_store
+from .vectorstore import vector_store
 
 
 #outil du llm pour récuperer les données de la base de connaissances
