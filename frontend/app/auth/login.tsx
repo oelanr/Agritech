@@ -10,21 +10,46 @@ import {
   Dimensions,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Animated,
+  Easing,
 } from "react-native";
 import Checkbox from "expo-checkbox";
 import { MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import api from "../../services/api"; // ton fichier api.ts
+import api from "../../services/api";
 
 const { width } = Dimensions.get("window");
 
-export default function LoginScreen({ navigation }: any) {
+export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // 🌿 Animation d’apparition
+  const fadeAnim = useState(new Animated.Value(0))[0];
+  const slideAnim = useState(new Animated.Value(40))[0];
+
+  React.useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 700,
+        useNativeDriver: true,
+        easing: Easing.out(Easing.ease),
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 700,
+        useNativeDriver: true,
+        easing: Easing.out(Easing.ease),
+      }),
+    ]).start();
+  }, []);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -33,7 +58,6 @@ export default function LoginScreen({ navigation }: any) {
     }
 
     setIsLoading(true);
-
     try {
       const response = await api.post("users/login", { email, password });
       const { access_token, email: userEmail, id: userId } = response.data;
@@ -42,9 +66,8 @@ export default function LoginScreen({ navigation }: any) {
       await AsyncStorage.setItem("email", userEmail);
       await AsyncStorage.setItem("userId", userId);
 
-      // Alert.alert("Succès", message);
       router.replace("/screens");
-    } catch (error: any) {
+    } catch (error) {
       const msg =
         error?.response?.data?.detail ||
         "Impossible de se connecter au serveur.";
@@ -56,109 +79,132 @@ export default function LoginScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle="light-content"
-      />
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
 
+      {/* 🌾 Image de fond avec overlay vert */}
       <ImageBackground
         source={require("@/assets/images/vary_tymain.jpg")}
         style={styles.imageBackground}
         resizeMode="cover"
       >
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.push('/auth')}
-        >
-          <Ionicons name="chevron-back" size={20} color="white" />
+        <View style={styles.overlay} />
+        <TouchableOpacity style={styles.backButton} onPress={() => router.push("/auth")}>
+          <Ionicons name="chevron-back" size={22} color="#fff" />
         </TouchableOpacity>
       </ImageBackground>
 
-      <View style={styles.formContainer}>
-        <Text style={styles.title}>Bon retour parmi nous</Text>
-        <Text style={styles.subtitle}>Connecter vous à votre compte</Text>
-
-        <View style={styles.inputContainer}>
-          <MaterialIcons name="person" size={20} color="#777" style={styles.icon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#999"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Entypo name="lock" size={20} color="#777" style={styles.icon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Mot de passe"
-            placeholderTextColor="#999"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-          />
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            <Entypo
-              name={showPassword ? "eye" : "eye-with-line"}
-              size={20}
-              color="#777"
-              style={styles.iconRight}
-            />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.row}>
-          <View style={styles.checkboxRow}>
-            <Checkbox value={remember} onValueChange={setRemember} />
-            <Text style={styles.rememberText}>Se souvenir de moi</Text>
-          </View>
-          <TouchableOpacity>
-            <Text style={styles.forgot}>Mots de passe oublié ?</Text>
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity
-          style={[styles.loginBtn, isLoading && { opacity: 0.6 }]}
-          onPress={handleLogin}
-          disabled={isLoading}
+      {/* 🧩 Formulaire animé */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <Animated.View
+          style={[
+            styles.formContainer,
+            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+          ]}
         >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.loginText}>Se connecter</Text>
-          )}
-        </TouchableOpacity>
+          <Text style={styles.title}>Bon retour parmi nous</Text>
+          <Text style={styles.subtitle}>Connectez-vous à votre compte</Text>
 
-        <Text style={styles.signup} onPress={() => router.push('/auth/sign')}>
-          Nouveau chez Agritech?{" "}
-          <Text style={styles.signupLink}>S'inscrire</Text>
-        </Text>
-      </View>
+          {/* Champ email */}
+          <View style={styles.inputContainer}>
+            <MaterialIcons name="person" size={20} color="#2E7D32" style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Adresse email"
+              placeholderTextColor="#888"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+            />
+          </View>
+
+          {/* Champ mot de passe */}
+          <View style={styles.inputContainer}>
+            <Entypo name="lock" size={20} color="#2E7D32" style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Mot de passe"
+              placeholderTextColor="#888"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <Entypo
+                name={showPassword ? "eye" : "eye-with-line"}
+                size={20}
+                color="#777"
+                style={styles.iconRight}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Ligne options */}
+          <View style={styles.row}>
+            <View style={styles.checkboxRow}>
+              <Checkbox
+                value={remember}
+                onValueChange={setRemember}
+                color={remember ? "#2E7D32" : undefined}
+              />
+              <Text style={styles.rememberText}>Se souvenir de moi</Text>
+            </View>
+            <TouchableOpacity>
+              <Text style={styles.forgot}>Mot de passe oublié ?</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Bouton principal */}
+          <TouchableOpacity
+            style={[styles.loginBtn, isLoading && { opacity: 0.7 }]}
+            onPress={handleLogin}
+            disabled={isLoading}
+            activeOpacity={0.8}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.loginText}>Se connecter</Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Lien d'inscription */}
+          <Text style={styles.signup}>
+            Nouveau chez <Text style={styles.brand}>AgriTech</Text> ?{" "}
+            <Text style={styles.signupLink} onPress={() => router.push("/auth/sign")}>
+              Créez un compte
+            </Text>
+          </Text>
+        </Animated.View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
+
   imageBackground: {
     position: "absolute",
     top: 0,
     width: width,
-    height: 410,
-    overflow: "hidden",
-    paddingTop: 30,
+    height: 420,
+    justifyContent: "flex-start",
+    paddingTop: 50,
     paddingHorizontal: 20,
   },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(46,125,50,0.35)",
+  },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(128,128,128,0.5)",
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "rgba(255,255,255,0.3)",
     justifyContent: "center",
     alignItems: "center",
     shadowOpacity: 0.1,
@@ -166,62 +212,84 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+
   formContainer: {
     flex: 1,
-    marginTop: 320,
-    paddingTop: 70,
-    padding: 20,
+    marginTop: 330,
     backgroundColor: "#fff",
-    borderTopLeftRadius: 60,
-    borderTopRightRadius: 60,
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    paddingHorizontal: 25,
+    paddingTop: 50,
     alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#b9b9b9ff",
-    elevation:3
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 6,
   },
+
   title: {
-    fontSize: 30,
-    fontWeight: "bold",
-    color: "#2e7d32",
-    marginBottom: 15,
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#2E7D32",
+    marginBottom: 10,
+    textAlign: "center",
   },
   subtitle: {
-    fontSize: 16,
-    color: "#777",
-    marginBottom: 30,
+    fontSize: 15,
+    color: "#555",
+    marginBottom: 25,
+    textAlign: "center",
   },
+
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    marginBottom: 20,
+    backgroundColor: "#F6F8F7",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    marginBottom: 18,
     width: "100%",
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
   },
-  icon: { marginRight: 10 },
-  iconRight: { marginLeft: 10 },
-  input: { flex: 1, height: 45, fontSize: 14 },
+  input: {
+    flex: 1,
+    height: 46,
+    fontSize: 15,
+    color: "#222",
+  },
+  icon: { marginRight: 8 },
+  iconRight: { marginLeft: 8 },
+
   row: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
+    alignItems: "center",
     width: "100%",
-    marginBottom: 20,
+    marginBottom: 25,
   },
   checkboxRow: { flexDirection: "row", alignItems: "center" },
-  rememberText: { fontSize: 16, color: "#555", marginLeft: 5 },
-  forgot: { fontSize: 16, color: "#2e7d32", fontWeight: "bold" },
+  rememberText: { fontSize: 14, color: "#555", marginLeft: 6 },
+  forgot: { fontSize: 14, color: "#2E7D32", fontWeight: "600" },
+
   loginBtn: {
-    backgroundColor: "#2e7d32",
-    borderRadius: 10,
-    paddingVertical: 12,
+    backgroundColor: "#2E7D32",
+    borderRadius: 30,
+    paddingVertical: 14,
     width: "100%",
     alignItems: "center",
-    marginTop: 20,
-    marginBottom: 10,
+    marginBottom: 20,
+    shadowColor: "#2E7D32",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 6,
   },
-  loginText: { color: "white", fontWeight: "bold", fontSize: 20 },
-  signup: { fontSize: 16, color: "#555" },
-  signupLink: { color: "#2e7d32", fontWeight: "bold" },
+  loginText: { color: "#fff", fontWeight: "600", fontSize: 17 },
+
+  signup: { fontSize: 15, color: "#444", textAlign: "center" },
+  brand: { color: "#2E7D32", fontWeight: "700" },
+  signupLink: { color: "#2E7D32", fontWeight: "700" },
 });

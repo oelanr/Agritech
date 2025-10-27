@@ -26,16 +26,18 @@ export default function CustomHeader() {
 }
 
 const styles = StyleSheet.create({
-    safeContainer: {
-        backgroundColor: '#FFFFFF',
-    },
-    container: {
-      width: '100%',
-      flexDirection: 'row',
-      justifyContent: 'space-between', 
-      alignItems: 'center',
-      paddingHorizontal: 20, 
-    },
+  safeContainer: {
+    backgroundColor: '#FFFFFF',
+  },
+  container: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 20, // 🔹 ajoute de l'espace sous la SafeArea
+    paddingBottom: 10, // 🔹 espace en bas pour que le header "respire"
+  },
   title: {
     fontSize: 32,
     color: "#212121",

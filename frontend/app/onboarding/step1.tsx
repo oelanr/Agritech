@@ -1,45 +1,53 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity,Pressable } from 'react-native';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
-const step1 = () => {
+const Step1 = () => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(40)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 800, useNativeDriver: true }),
+    ]).start();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Bienvenue dans AgriTech</Text>
+      {/* --- Petites décorations de fond --- */}
+      <View style={styles.decorTopLeft} />
+      <View style={styles.decorBottomRight} />
 
-        <Pressable>
-          <Text style={styles.link}>
-            L’application innovante pour l’analyse de cultures agricole
-          </Text>
-        </Pressable>
+      <Animated.View
+        style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
+      >
+        <View style={styles.imageContainer}>
+          <Image
+            source={require('../../assets/images/riziere.png')}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        </View>
 
-        <Image
-          source={require('../../assets/images/riziere.png')}
-          style={styles.image}
-        />
-
-        <Text style={styles.subtitle}>Analyse par choix de symptôme</Text>
-
-        <Text style={styles.description}>
-          Découvrez la force de notre application permettant d’analyser les
-          différents problèmes de maladies des cultures agricoles grâce à notre
-          chatbot spécialisé
+        <Text style={styles.title}>
+          Bienvenue dans <Text style={styles.highlight}>AgriTech</Text>
         </Text>
-      </View>
+        <Text style={styles.subtitle}>
+          Analysez facilement la santé de vos cultures grâce à l’intelligence artificielle.
+        </Text>
 
-      <View style={styles.footer}>
+        <TouchableOpacity style={styles.button} onPress={() => router.push('/onboarding/step2')}>
+          <Text style={styles.buttonText}>Suivant →</Text>
+        </TouchableOpacity>
+
         <View style={styles.dots}>
           <View style={styles.dotActive} />
           <View style={styles.dot} />
           <View style={styles.dot} />
         </View>
-
-        <TouchableOpacity>
-          <Text style={styles.next} onPress={() => router.push('/onboarding/step2')}>Suivant</Text>
-        </TouchableOpacity>
-      </View>
+      </Animated.View>
     </SafeAreaView>
   );
 };
@@ -48,68 +56,86 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
   },
-  content: {
-    marginTop: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 6,
-  },
-  link: {
-    marginTop:10,
-    marginBottom:10,
-    fontSize:20,
-    fontWeight:"medium"
+
+  // ✅ Image container avec radius + shadow
+  imageContainer: {
+    width: '100%',
+    height: 280,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#E9F5EC',
+    borderRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+    marginBottom: 40,
   },
   image: {
-    width: '100%',
-    height: 300,
-    borderRadius: 20,
-    marginBottom: 20,
+    width: '90%',
+    height: '90%',
+    borderRadius: 25,
   },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginTop:10,
+
+  content: { alignItems: 'center', width: '100%' },
+  title: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: '#212121',
+    textAlign: 'center',
     marginBottom: 10,
   },
-  description: {
-    marginTop:10,
-    fontSize: 20,
-    color: '#333',
-    lineHeight: 30,
+  highlight: { color: '#2E7D32' },
+  subtitle: {
+    fontSize: 16,
+    color: '#4F4F4F',
+    textAlign: 'center',
+    marginBottom: 40,
+    lineHeight: 22,
+    paddingHorizontal: 20,
   },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
+  button: {
+    backgroundColor: '#2E7D32',
+    borderRadius: 30,
+    paddingHorizontal: 36,
+    paddingVertical: 14,
+    shadowColor: '#2E7D32',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
   },
-  dots: {
-    flexDirection: 'row',
-    gap: 6,
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  dots: { flexDirection: 'row', gap: 8, marginTop: 25 },
+  dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#D9D9D9' },
+  dotActive: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#2E7D32' },
+
+  // 🌿 Décorations subtiles en arrière-plan
+  decorTopLeft: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 120,
+    height: 120,
+    borderBottomRightRadius: 120,
+    backgroundColor: '#E0F2E2',
+    opacity: 0.4,
   },
-  dot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#ccc',
-  },
-  dotActive: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#000',
-  },
-  next: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#000',
+  decorBottomRight: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 160,
+    height: 160,
+    borderTopLeftRadius: 160,
+    backgroundColor: '#CDE8CF',
+    opacity: 0.3,
   },
 });
 
-export default step1;
+export default Step1;

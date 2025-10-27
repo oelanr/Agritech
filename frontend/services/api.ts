@@ -3,7 +3,7 @@ import axios, { AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'ax
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // URL de ton backend FastAPI
-const API_BASE_URL = 'http://10.0.2.2:8001';
+const API_BASE_URL = 'http://192.168.88.247:8001';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
