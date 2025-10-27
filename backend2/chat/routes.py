@@ -1,8 +1,8 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 from database import get_db
 from . import schemas, crud
-
+from . import models
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
@@ -60,3 +60,39 @@ async def ask_chatbot(request: AskChatRequest, db: Session = Depends(get_db)):
     except Exception as e:
         print("Erreur RAG:", e)
         raise HTTPException(status_code=500, detail="Erreur interne du chatbot.")
+
+# chat/routes.py
+@router.get("/history/{user_id}")
+def get_chat_history_by_user(user_id: str, db: Session = Depends(get_db)):
+    sessions = crud.get_user_chat_sessions(db, user_id)
+    history = []
+    for session_id in sessions:
+        # On prend le dernier message pour aperçu
+        last_msg = (
+            db.query(models.ChatMessage)
+            .filter(models.ChatMessage.session_id == session_id)
+            .order_by(models.ChatMessage.created_at.desc())
+            .first()
+        )
+        if last_msg:
+            history.append({
+                "session_id": session_id,
+                "last_question": last_msg.question,
+                "last_answer": last_msg.answer,
+                "last_date": last_msg.created_at
+            })
+    return history
+
+@router.delete("/history/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user_history(user_id: str, db: Session = Depends(get_db)):
+    crud.delete_all_user_chats(db, user_id)
+    return {"detail": "Historique supprimé avec succès."}
+
+@router.delete("/history/session/{session_id}")
+def delete_chat_session(session_id: str, db: Session = Depends(get_db)):
+    """Supprime une session de chat par session_id"""
+    try:
+        crud.delete_chat_session(db, session_id)
+        return {"message": f"Session {session_id} supprimée avec succès."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression: {str(e)}")

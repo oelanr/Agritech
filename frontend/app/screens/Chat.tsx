@@ -14,6 +14,7 @@ import {
 import api from "../../services/api";
 import CustomHero from "@/components/CustomHero";
 import { useRoute } from "@react-navigation/native";
+import { getOrCreateUserId } from "../../utils/user"; // ✅ ajouté
 
 const { width } = Dimensions.get("window");
 
@@ -78,24 +79,36 @@ const Chat = () => {
   ]);
   const [loading, setLoading] = useState(true);
   const [inputText, setInputText] = useState("");
+  const [userId, setUserId] = useState<string | null>(null); // ✅ stocke l'user_id
+  const [sessionId, setSessionId] = useState<string>(""); // ✅ stocke sessionId
 
   const scrollViewRef = useRef<ScrollView>(null);
   const route = useRoute();
   const initialData = route.params?.data || null;
-  const [sessionId] = useState(`sess-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`);
 
+  // 🔹 Initialise userId et sessionId
+  useEffect(() => {
+    const init = async () => {
+      const uid = await getOrCreateUserId();
+      setUserId(uid);
+      setSessionId(`sess-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`);
+    };
+    init();
+  }, []);
+
+  // 🔹 Scroll automatique
   useEffect(() => {
     if (scrollViewRef.current) scrollViewRef.current.scrollToEnd({ animated: true });
   }, [messages]);
 
   // ------------------- Scan initial -------------------
   useEffect(() => {
-    if (!initialData) return;
+    if (!initialData || !userId || !sessionId) return; // ✅ attendre que userId et sessionId soient prêts
 
     const sendScanAndChat = async () => {
       try {
         const payload = {
-          user_id: sessionId,
+          user_id: userId, // ✅ userId persistant
           symptomes: Object.fromEntries(Object.entries(initialData).map(([k, v]) => [k, v ?? 0])),
         };
 
@@ -107,10 +120,10 @@ const Chat = () => {
         const chatResponse = await api.post("/chat/ask", {
           question: `La maladie détectée est ${prediction}. Donne les causes, symptômes principaux, actions correctives et méthodes de prévention adaptées.`,
           session_id: sessionId,
+          user_id: userId, // ✅ userId persistant
         });
 
         const advice = chatResponse.data?.answer || "Impossible de fournir des conseils détaillés pour le moment.";
-
         setMessages((prev) => [...prev, { sender: "bot", text: advice }]);
       } catch (error) {
         console.error("Erreur scan:", error);
@@ -124,25 +137,22 @@ const Chat = () => {
     };
 
     sendScanAndChat();
-  }, [initialData, sessionId]);
+  }, [initialData, userId, sessionId]);
 
   // ------------------- Envoi message utilisateur -------------------
   const sendMessage = async () => {
-    if (!inputText.trim()) return;
+    if (!inputText.trim() || !userId || !sessionId) return;
 
     const userMessage = { sender: "user", text: inputText };
     setMessages((prev) => [...prev, userMessage]);
     setInputText("");
 
-    console.log(">>> sendMessage appelé avec:", inputText);
-
     try {
       const response = await api.post("/chat/ask", {
         question: inputText,
         session_id: sessionId,
+        user_id: userId, // ✅ userId persistant
       });
-
-      console.log("Réponse du chatbot:", response.data);
 
       const botMessage = { sender: "bot", text: response.data.answer || "Aucune réponse reçue du chatbot." };
       setMessages((prev) => [...prev, botMessage]);
@@ -169,7 +179,12 @@ const Chat = () => {
       </ScrollView>
 
       <View style={styles.inputContainer}>
-        <TextInput style={styles.input} placeholder="Écrivez un message..." value={inputText} onChangeText={setInputText} />
+        <TextInput
+          style={styles.input}
+          placeholder="Écrivez un message..."
+          value={inputText}
+          onChangeText={setInputText}
+        />
         <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
           <Text style={{ color: "#fff" }}>Envoyer</Text>
         </TouchableOpacity>
