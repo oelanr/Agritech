@@ -65,12 +65,9 @@ const Cards = ({ refreshKey }) => {
           >
             <View style={styles.cardHeader}>
               <View style={styles.first}>
-                <View style={styles.iconContainer}>
-                  <Image source={require('@/assets/images/droplet.png')} style={styles.cardIcon} />
-                </View>
+               
                 <View>
                   <AppText style={styles.cardTitle} weight="700">{disease.name}</AppText>
-                  <AppText style={styles.cardType} weight="500">{item.type || "Type inconnu"}</AppText>
                 </View>
               </View>
               <View style={[styles.statusTag, { backgroundColor: isHighRisk ? '#CC402D33' : 'rgba(223,129,66,0.2)' }]}>
@@ -79,7 +76,6 @@ const Cards = ({ refreshKey }) => {
                 </AppText>
               </View>
             </View>
-            <AppText style={styles.cardDesc}>{item.description || "Pas de description disponible."}</AppText>
           </TouchableOpacity>
         );
       })}
@@ -143,10 +139,9 @@ const Home = () => {
 const styles = StyleSheet.create({
   container: { 
     backgroundColor: "#FFFFFF", 
-    height: height, 
-    flexDirection: 'column', 
-    paddingHorizontal: 5,
-    paddingTop: 40,
+    flex: 1, // 🔹 prendre tout l'espace disponible
+    paddingHorizontal: 15, // 🔹 réduit pour éviter débordement
+    paddingTop: 30,
   },
   boxbutton: { 
     flexDirection: 'row', 
@@ -159,10 +154,10 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     justifyContent:'center', 
     backgroundColor: '#212121', 
-    borderRadius: 30, 
-    paddingVertical: 6, 
+    borderRadius: 25, 
+    paddingVertical: 8, 
     marginHorizontal: 20, 
-    marginVertical: 15, 
+    marginVertical: 12, 
     width:"70%", 
     shadowColor: '#000', 
     shadowOpacity: 0.2, 
@@ -174,25 +169,25 @@ const styles = StyleSheet.create({
     fontSize: width * 0.04 
   },
   historyText: { 
-    fontSize:21,
+    fontSize:19,
     textDecorationLine:'underline',
-    marginVertical:10,
+    marginVertical:8,
     textAlign:'center'
   },
   analysisHeader: {
     flexDirection:'row',
     justifyContent:'space-between',
-    marginHorizontal:20,
-    marginTop: 20,
+    marginHorizontal:15,
+    marginTop: 15,
   },
-  sectionTitle: { fontSize: 20, fontFamily:'SpaceGrotesk-Bold' },
-  viewAll: { fontSize: 20, fontFamily: 'SpaceGrotesk-Medium', color:'#212121' },
+  sectionTitle: { fontSize: 18, fontFamily:'SpaceGrotesk-Bold' },
+  viewAll: { fontSize: 18, fontFamily: 'SpaceGrotesk-Medium', color:'#212121' },
   card: { 
     backgroundColor: '#F2F4F8', 
-    borderRadius: 15, 
+    borderRadius: 12, 
     marginHorizontal: width * 0.05, 
-    marginVertical: height * 0.01, 
-    padding: width * 0.04, 
+    marginVertical: height * 0.008, 
+    padding: width * 0.035, 
     shadowColor: '#000', 
     shadowOpacity: 0.05, 
     shadowRadius: 3, 
@@ -200,13 +195,14 @@ const styles = StyleSheet.create({
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 },
   iconContainer: { backgroundColor: 'white', padding: width * 0.015, borderRadius: 6 },
-  cardIcon: { width: width * 0.06, height: width * 0.06 },
-  cardTitle: { fontSize: 18, color: '#111', fontFamily:'SpaceGrotesk-Bold' },
+  cardIcon: { width: width * 0.05, height: width * 0.05 },
+  cardTitle: { fontSize: 16, color: '#111', fontFamily:'SpaceGrotesk-Bold' },
   cardType: { color: '#353535CC', marginBottom: 4 },
-  statusTag: { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, alignSelf: 'flex-start' },
-  statusText: { fontSize: width * 0.035,fontFamily:'SpaceGrotesk-Regular' },
-  cardDesc: { color: '#353535CC', marginBottom: 8, fontFamily:'SpaceGrotesk-Regular'},
-  first: { flexDirection: 'row', alignItems: 'center', gap: width * 0.02 },
+  statusTag: { borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2, alignSelf: 'flex-start' },
+  statusText: { fontSize: width * 0.032,fontFamily:'SpaceGrotesk-Regular' },
+  cardDesc: { color: '#353535CC', marginBottom: 6, fontFamily:'SpaceGrotesk-Regular'},
+  first: { flexDirection: 'row', alignItems: 'center', gap: width * 0.015 },
 });
+
 
 export default Home;

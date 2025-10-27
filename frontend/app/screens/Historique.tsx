@@ -12,8 +12,16 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import api from "../../services/api";
 import { getOrCreateUserId } from "../../utils/user";
+import { diseaseData } from "../data/diseaseSeverity";
 
 const { width } = Dimensions.get("window");
+
+const AppText = ({ style, children, weight = "400", ...props }) => {
+  let fontFamily = "SpaceGrotesk_400Regular";
+  if (weight === "500") fontFamily = "SpaceGrotesk_500Medium";
+  if (weight === "700") fontFamily = "SpaceGrotesk_700Bold";
+  return <Text style={[{ fontFamily }, style]} {...props}>{children}</Text>;
+};
 
 const Historique = () => {
   const [history, setHistory] = useState<any[]>([]);
@@ -21,7 +29,6 @@ const Historique = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const navigation = useNavigation();
 
-  // 🔹 Init userId
   useEffect(() => {
     const init = async () => {
       const id = await getOrCreateUserId();
@@ -30,22 +37,31 @@ const Historique = () => {
     init();
   }, []);
 
-  // 🔹 Fonction fetchHistory réutilisable
   const fetchHistory = async () => {
     if (!userId) return;
     setLoading(true);
     try {
-      const res = await api.get(`/chat/history/${userId}`);
-      setHistory(res.data || []);
+      const res = await api.get(`/scan/history/${userId}`);
+      const sorted = (res.data || []).sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      // 🔹 Appliquer le nom de maladie via prediction
+      const historyWithDisease = sorted.map(item => {
+        const diseaseName = item.disease_name || item.prediction;
+        return { ...item, disease_name: diseaseName };
+      });
+
+      setHistory(historyWithDisease);
     } catch (err) {
-      console.error("Erreur lors du chargement de l'historique :", err);
+      console.error("Erreur chargement historique :", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchHistory();
+    if (userId) fetchHistory();
   }, [userId]);
 
   const deleteSession = async (session_id: string) => {
@@ -60,7 +76,7 @@ const Historique = () => {
           onPress: async () => {
             try {
               await api.delete(`/chat/history/session/${session_id}`);
-              fetchHistory(); // 🔹 refresh après suppression
+              fetchHistory();
             } catch (err) {
               console.error(err);
             }
@@ -70,72 +86,79 @@ const Historique = () => {
     );
   };
 
-  if (loading)
-    return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#000" />
-        <Text style={{ marginTop: 10 }}>Chargement de l'historique...</Text>
-      </View>
-    );
+  if (loading) return (
+    <View style={styles.loaderContainer}>
+      <ActivityIndicator size="large" color="#000" />
+      <Text style={{ marginTop: 10 }}>Chargement de l'historique...</Text>
+    </View>
+  );
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#fff" }} contentContainerStyle={{ paddingBottom: 100 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: "#fff" }} contentContainerStyle={{ paddingBottom: 200 }}>
       <View style={styles.headerContainer}>
-        <Text style={styles.title}>Vos conversations précédentes</Text>
+        <AppText style={styles.title} weight="700">Historique des sessions</AppText>
         <TouchableOpacity style={styles.refreshButton} onPress={fetchHistory}>
-          <Text style={styles.refreshButtonText}>⟳ Refresh</Text>
+          <AppText style={styles.refreshButtonText} weight="700">↻ Rafraîchir</AppText>
         </TouchableOpacity>
       </View>
 
       {history.length === 0 ? (
-        <Text style={styles.emptyText}>Aucune conversation enregistrée pour le moment.</Text>
+        <AppText style={styles.emptyText}>Aucune session enregistrée pour le moment.</AppText>
       ) : (
-        history.map((item, index) => (
-          <View key={index} style={styles.sessionContainer}>
-            <TouchableOpacity
-              style={styles.card}
-              onPress={() => navigation.navigate("Chat", { session_id: item.session_id })}
-            >
-              <Text style={styles.cardTitle}>Session {index + 1}</Text>
-              <Text style={styles.cardDate}>
-                {item.last_date ? new Date(item.last_date).toLocaleString() : "Date inconnue"}
-              </Text>
-              <Text numberOfLines={1} style={styles.cardQuestion}>
-                🗣️ {item.last_question || "Aucune question"}
-              </Text>
-              <Text numberOfLines={1} style={styles.cardAnswer}>
-                🤖 {item.last_answer || "Pas encore de réponse"}
-              </Text>
-            </TouchableOpacity>
+        history.map((item, index) => {
+          const disease = diseaseData[item.disease_name] || { name: item.disease_name || "Analyse", severity: "Moyenne" };
+          const isHighRisk = disease.severity === "Élevée";
 
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => deleteSession(item.session_id)}
-            >
-              <Text style={styles.deleteButtonText}>Supprimer</Text>
-            </TouchableOpacity>
-          </View>
-        ))
+          return (
+            <View key={index} style={styles.sessionContainer}>
+              <TouchableOpacity
+                style={styles.card}
+                onPress={() => navigation.navigate("Chat", { session_id: item.id })}
+              >
+                <View style={styles.cardHeader}>
+                  <AppText style={styles.cardTitle} weight="700">{disease.name}</AppText>
+                  <View style={[styles.statusTag, { backgroundColor: isHighRisk ? '#CC402D33' : 'rgba(0,0,0,0.1)' }]}>
+                    <AppText style={[styles.statusText, { color: isHighRisk ? "#CC402D" : "#000" }]} weight="700">
+                      {disease.severity}
+                    </AppText>
+                  </View>
+                </View>
+
+                <AppText style={styles.cardDate}>
+                  {item.created_at ? new Date(item.created_at).toLocaleString() : "Date inconnue"}
+                </AppText>
+
+              
+                <TouchableOpacity style={styles.deleteButton} onPress={() => deleteSession(item.id)}>
+                  <AppText style={styles.deleteButtonText} weight="700">Supprimer</AppText>
+                </TouchableOpacity>
+              </TouchableOpacity>
+            </View>
+          );
+        })
       )}
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  headerContainer: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginHorizontal: 20 },
-  title: { fontSize: 20, fontWeight: "700" },
-  refreshButton: { backgroundColor: "#2E81A8", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6 },
-  refreshButtonText: { color: "#fff", fontWeight: "700" },
+  headerContainer: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginHorizontal: 20, marginTop: 20, marginBottom: 15 },
+  title: { fontSize: 20, color: "#111" },
+  refreshButton: { backgroundColor: "#212121", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12 },
+  refreshButtonText: { color: "#fff" },
   emptyText: { textAlign: "center", marginTop: 40, color: "#888", fontSize: 15 },
   loaderContainer: { flex: 1, alignItems: "center", justifyContent: "center", marginTop: 60 },
   sessionContainer: { marginBottom: 15 },
-  card: { backgroundColor: "#F2F4F8", borderRadius: 12, marginHorizontal: 20, padding: 15 },
-  cardTitle: { fontSize: 16, fontWeight: "700", marginBottom: 4 },
-  cardDate: { fontSize: 12, color: "#888" },
-  cardQuestion: { fontSize: 14, marginTop: 6, color: "#333" },
-  cardAnswer: { fontSize: 14, color: "#2E81A8" },
-  deleteButton: { marginHorizontal: 20, marginTop: 5, backgroundColor: "#FF5252", padding: 6, borderRadius: 6, alignItems: "center" },
-  deleteButtonText: { color: "#fff", fontWeight: "700" },
+  card: { backgroundColor: "#F2F4F8", borderRadius: 15, marginHorizontal: 20, padding: 18, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5, elevation: 3 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  cardTitle: { fontSize: 16, color: "#111" },
+  statusTag: { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, alignSelf: 'flex-start' },
+  statusText: { fontSize: width * 0.035 },
+  cardDate: { fontSize: 12, color: "#888", marginBottom: 6 },
+  cardQuestion: { fontSize: 14, color: "#333", marginBottom: 4 },
+  cardAnswer: { fontSize: 14, color: "#2E81A8", marginBottom: 8 },
+  deleteButton: { backgroundColor: "#212121", padding: 8, borderRadius: 10, alignItems: "center", marginTop: 5 },
+  deleteButtonText: { color: "#fff" },
 });
 
 export default Historique;

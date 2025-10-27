@@ -1,18 +1,19 @@
 import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import UserEmail from './UserEmail';
 import { 
   useFonts, 
-  SpaceGrotesk_400Regular, // Poids Regular
+  SpaceGrotesk_400Regular,
   SpaceGrotesk_500Medium,
-  SpaceGrotesk_700Bold      // Poids Bold 
+  SpaceGrotesk_700Bold
 } from '@expo-google-fonts/space-grotesk';
-const CustomHero = ({title="",heroText=""}) => {
 
+const CustomHero = ({title="", heroText=""}) => {
   const [fontsLoaded] = useFonts({
     'SpaceGrotesk-Regular': SpaceGrotesk_400Regular,
     'SpaceGrotesk-Bold': SpaceGrotesk_700Bold,
-    'SpaceGrotesk-Medium' : SpaceGrotesk_500Medium
+    'SpaceGrotesk-Medium': SpaceGrotesk_500Medium
   });
 
   return (
@@ -26,15 +27,33 @@ const CustomHero = ({title="",heroText=""}) => {
 }
 
 export const CustomHeroForProfile = () => {
-  return <>
+  const [email, setEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadEmail = async () => {
+      try {
+        const storedEmail = await AsyncStorage.getItem('email');
+        if (storedEmail) setEmail(storedEmail);
+      } catch (error) {
+        console.error('Erreur lors du chargement de l’email', error);
+      }
+    };
+    loadEmail();
+  }, []);
+
+  // Tronquer l’email pour afficher seulement la partie avant @
+  const displayName = email ? email.split('@')[0] : "Utilisateur";
+  const circleInitials = email ? email.substring(0,2).toUpperCase() : "US";
+
+  return (
     <View style={styles.profileContainer}>
       <View style={styles.profile}>
-        <Text style={styles.nickname}>BR</Text>
+        <Text style={styles.nickname}>{circleInitials}</Text>
       </View>
-      <Text style={styles.fullname}>bryan Ranaivo</Text>
+      <Text style={styles.fullname}>{displayName}</Text>
       <UserEmail style={{color:'#666666ff'}}/>
     </View>
-  </>
+  )
 }
 
 export default CustomHero

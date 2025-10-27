@@ -107,7 +107,6 @@ export default function LoginScreen() {
           <Text style={styles.title}>Bon retour parmi nous</Text>
           <Text style={styles.subtitle}>Connectez-vous à votre compte</Text>
 
-          {/* Champ email */}
           <View style={styles.inputContainer}>
             <MaterialIcons name="person" size={20} color="#2E7D32" style={styles.icon} />
             <TextInput
@@ -139,21 +138,6 @@ export default function LoginScreen() {
                 color="#777"
                 style={styles.iconRight}
               />
-            </TouchableOpacity>
-          </View>
-
-          {/* Ligne options */}
-          <View style={styles.row}>
-            <View style={styles.checkboxRow}>
-              <Checkbox
-                value={remember}
-                onValueChange={setRemember}
-                color={remember ? "#2E7D32" : undefined}
-              />
-              <Text style={styles.rememberText}>Se souvenir de moi</Text>
-            </View>
-            <TouchableOpacity>
-              <Text style={styles.forgot}>Mot de passe oublié ?</Text>
             </TouchableOpacity>
           </View>
 
