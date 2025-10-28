@@ -81,7 +81,7 @@ export default function RegisterScreen() {
 
       {/* 🌿 Image décorative en haut */}
       <ImageBackground
-        source={require("@/assets/images/vary_tymain.jpg")}
+        source={require("../../assets/images/rice.jpg")}
         style={styles.imageHeader}
         resizeMode="cover"
       >

@@ -8,7 +8,7 @@ const { width, height } = Dimensions.get("window");
 const WelcomeScreen = () => {
   return (
     <ImageBackground
-      source={require("@/assets/images/vary_tymain.jpg")}
+      source={require("../../assets/images/rice.jpg")}
       style={styles.background}
       resizeMode="cover"
     >

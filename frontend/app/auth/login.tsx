@@ -83,7 +83,7 @@ export default function LoginScreen() {
 
       {/* 🌾 Image de fond avec overlay vert */}
       <ImageBackground
-        source={require("@/assets/images/vary_tymain.jpg")}
+        source={require("../../assets/images/riz.jpg")}
         style={styles.imageBackground}
         resizeMode="cover"
       >
